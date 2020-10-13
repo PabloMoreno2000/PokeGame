@@ -21,6 +21,10 @@ const CardSchema = new mongoose.Schema({
       hp: {
           type: Number,
       },
+      idtcgcard:{
+          type: String,
+          unique: true,
+      },
       attacks: [
           {
               name: {
