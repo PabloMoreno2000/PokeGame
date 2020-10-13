@@ -12,7 +12,6 @@ const CardSchema = new mongoose.Schema({
   },
   photo: {
     type: String,
-    data: Buffer,
     required: true,
   },
   description: {
