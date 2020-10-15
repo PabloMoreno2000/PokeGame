@@ -15,45 +15,45 @@ const CardSchema = new mongoose.Schema({
     required: true,
   },
   description: {
-      type: String,
+    type: String,
   },
   pokemonInfo: {
-      hp: {
-          type: Number,
-      },
-      idtcgcard:{
+    hp: {
+      type: Number,
+    },
+    idtcgcard: {
+      type: String,
+      unique: true,
+    },
+    attacks: [
+      {
+        name: {
           type: String,
-          unique: true,
+        },
+        description: {
+          type: String,
+        },
+        energy: {
+          type: Number,
+        },
+        damage: {
+          type: Number,
+        },
       },
-      attacks: [
-          {
-              name: {
-                  type: String,
-              },
-              description: {
-                  type: String,
-              },
-              energy: {
-                  type: Number,
-              },
-              damage: {
-                  type: Number,
-              },
-          },
-      ],
+    ],
   },
-  itemInfo:{
-      effects: [
-          {
-              attribute: {
-                  type: String,
-              },
-              boost: {
-                  type: Number,
-              },
-          }
-      ]
-  }
+  itemInfo: {
+    effects: [
+      {
+        attribute: {
+          type: String,
+        },
+        boost: {
+          type: Number,
+        },
+      },
+    ],
+  },
 });
 
 module.exports = Subject = mongoose.model("card", CardSchema);
