@@ -13,5 +13,6 @@ app.use(express.json({ extended: false }));
 app.get("/", (req, res) => res.send("API Running"));
 app.use("/admin/managecards", require("./routes/admin/managecards"));
 app.use("/admin/managetypes", require("./routes/admin/managetypes"));
+app.use("/api/users", require("./routes/api/users"));
 
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
