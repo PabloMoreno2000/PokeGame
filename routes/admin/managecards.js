@@ -61,9 +61,10 @@ router.post(
           attacks: attacks,
         },
       });
+
       try {
         await pokemonCard.save();
-      } catch {
+      } catch (error) {
         return res.status(400).json({ msg: "Card already stored" });
       }
 
