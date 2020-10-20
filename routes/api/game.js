@@ -79,7 +79,7 @@ async function createDeck(cardsNo, items, pokemons, energies) {
 
   const expandUntil = (array, n) => {
     let newArr = array;
-    while (array.length < n) {
+    while (newArr.length < n) {
       newArr = newArr.concat(array);
     }
     return newArr;
@@ -106,6 +106,7 @@ async function createDeck(cardsNo, items, pokemons, energies) {
   energyCards = getRandom(energyCards, energyN);
 
   // Add everything to an array
+  // TODO: Shuffle result
   return pokemonCards.concat(itemCards).concat(energyCards);
 }
 
