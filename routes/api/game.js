@@ -40,13 +40,19 @@ router.post("/newGame", async (req, res) => {
   let cards2 = result.hand;
   deck = result.deck;
 
-  // Assign turn
-
   const game = {
-    player1,
-    player2,
-    cards1,
-    cards2,
+    player1: {
+      id: player1,
+      cards: cards1,
+      bench: [],
+      activePokemon: {},
+    },
+    player2: {
+      id: player2,
+      cards: cards2,
+      bench: [],
+      activePokemon: {},
+    },
     deck,
     turn: false,
     gameId: nextGameId,
