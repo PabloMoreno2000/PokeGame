@@ -73,11 +73,15 @@ function getRandom(array, n) {
 
 // Create the main deck of cards
 async function createDeck(cardsNo, items, pokemons, energies) {
-  types = getTypes();
+  const types = await getTypes();
 
   const repeatProb = 3;
 
   const expandUntil = (array, n) => {
+    if (array.length == 0) {
+      return array;
+    }
+
     let newArr = array;
     while (newArr.length < n) {
       newArr = newArr.concat(array);
@@ -91,9 +95,10 @@ async function createDeck(cardsNo, items, pokemons, energies) {
   const energyN = Math.floor(cardsNo * energies);
 
   // Get all cards from each category
-  let pokemonCards = await Card.find({ type: types[pokemon] });
-  let itemCards = await Card.find({ type: types[item] });
-  let energyCards = await Card.find({ type: types[energy] });
+  let abc = types.pokemon.id;
+  let pokemonCards = await Card.find({ type: types.pokemon.id });
+  let itemCards = await Card.find({ type: types.item.id });
+  let energyCards = await Card.find({ type: types.energy.id });
 
   // If there's a lack of cards, clone them
   pokemonCards = expandUntil(pokemonCards, pokemonN * repeatProb);
@@ -116,6 +121,7 @@ async function getTypes() {
     item: await CardType.findOne({ name: "item" }),
     energy: await CardType.findOne({ name: "energy" }),
   };
+  return types;
 }
 
 module.exports = router;
