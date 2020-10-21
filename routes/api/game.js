@@ -23,44 +23,57 @@ router.post("/move/:id/:player", async (req, res) => {
   let x = 1;
 });
 
-router.post("/newGame", async (req, res) => {
-  const deckN = 100;
-  const playerHand = 8;
-  const { player1, player2 } = req.body;
+// TODO: Check that the IDs are valid in the DB
+router.post(
+  "/newGame",
+  [
+    check("player1", "Please specify a valid first player").exists(),
+    check("player2", "Please specify a valid second player").exists(),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
 
-  // Create deck
-  let deck = await createDeck(deckN + playerHand * 2, 0.25, 0.25, 0.5);
+    const deckN = 100;
+    const playerHand = 8;
+    const { player1, player2 } = req.body;
 
-  // Distribute cards
-  let result = getNewHandFromDeck(deck, playerHand);
-  let cards1 = result.hand;
-  deck = result.deck;
+    // Create deck
+    let deck = await createDeck(deckN + playerHand * 2, 0.25, 0.25, 0.5);
 
-  result = getNewHandFromDeck(deck, playerHand);
-  let cards2 = result.hand;
-  deck = result.deck;
+    // Distribute cards
+    let result = getNewHandFromDeck(deck, playerHand);
+    let cards1 = result.hand;
+    deck = result.deck;
 
-  const game = {
-    player1: {
-      id: player1,
-      cards: cards1,
-      bench: [],
-      activePokemon: {},
-    },
-    player2: {
-      id: player2,
-      cards: cards2,
-      bench: [],
-      activePokemon: {},
-    },
-    deck,
-    turn: false,
-    gameId: nextGameId,
-  };
-  games[nextGameId] = game;
-  nextGameId++;
-  res.send(game);
-});
+    result = getNewHandFromDeck(deck, playerHand);
+    let cards2 = result.hand;
+    deck = result.deck;
+
+    const game = {
+      player1: {
+        id: player1,
+        cards: cards1,
+        bench: [],
+        activePokemon: {},
+      },
+      player2: {
+        id: player2,
+        cards: cards2,
+        bench: [],
+        activePokemon: {},
+      },
+      deck,
+      turn: false,
+      gameId: nextGameId,
+    };
+    games[nextGameId] = game;
+    nextGameId++;
+    res.send(game);
+  }
+);
 
 // Generate a hand from the deck.
 // Returns an object of the form { hand, resultingDeck }.
