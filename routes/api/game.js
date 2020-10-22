@@ -126,7 +126,7 @@ router.put(
 
     // bench position starts from 0
     if (benchPosition >= game[player].bench.length) {
-      return res.status(400).json({ msg: "Invalid bench position" });
+      return res.status(404).json({ msg: "Card not found" });
     }
     if (isObjectEmpty(game[player].activePokemon)) {
       const card = game[player].bench.splice(benchPosition, 1);
@@ -139,8 +139,78 @@ router.put(
   }
 );
 
+// @route  PUT api/game/useItemInActivePkm
+// @desct uses an item in the active pokemon of the authenticated player
+// @access Private
+router.put(
+  "/useItemInActivePkm",
+  [
+    auth,
+    [
+      check("gameId", "Please specify a game id").exists(),
+      check("handItemPos", "Please specify an item in your hand").exists(),
+    ],
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { gameId, handItemPos } = req.body;
+    const playerId = req.user.id;
+    let game = {};
+    let player = "";
+
+    const status = canPerformMove(gameId, playerId);
+    if (!status.canMove) {
+      return res.status(400).json({ msg: status.message });
+    } else {
+      game = status.game;
+      player = status.player;
+    }
+
+    if (isObjectEmpty(game[player].activePokemon)) {
+      return res.status(400).send("There's no active pokemon");
+    }
+
+    if (handItemPos >= game[player].hand.length) {
+      return res.status(404).send("Card not found");
+    }
+
+    const types = await getTypes();
+    const card = game[player].hand[handItemPos];
+    if (card.type != types.item.id) {
+      return res.status(400).send("Specified card is not an item");
+    }
+
+    const applyItemToPokemon = (item, pokemon) => {
+      const effects = item.itemInfo.effects;
+      const pokeInfo = pokemon.pokemonInfo;
+      effects.map((effect) => {
+        switch (effect.attribute) {
+          case "instant-heal":
+            pokeInfo.currHp = Math.min(
+              pokeINfo.maxHp,
+              pokeInfo.currHp + effect.boost
+            );
+            break;
+
+          case "turn-healing":
+            pokeInfo.itemEffects.push({
+              name: "turn-healing",
+              turnsLeft: 5,
+            });
+            break;
+
+          default:
+        }
+      });
+    };
+  }
+);
+
 // TODO: Assure at least one pokemon to be in the hand of each player
-// TODO: Check that the IDs are valid in the DB
 router.post(
   "/newGame",
   [
@@ -242,7 +312,6 @@ async function createDeck(cardsNo, items, pokemons, energies) {
   const energyN = Math.floor(cardsNo * energies);
 
   // Get all cards from each category
-  let abc = types.pokemon.id;
   let pokemonCards = await Card.find({ type: types.pokemon.id });
   let itemCards = await Card.find({ type: types.item.id });
   let energyCards = await Card.find({ type: types.energy.id });
@@ -257,7 +326,14 @@ async function createDeck(cardsNo, items, pokemons, energies) {
   itemCards = getRandom(itemCards, itemN);
   energyCards = getRandom(energyCards, energyN);
 
-  // Add everything to an array
+  // In the database is okay to have "hp", in the game current hp and max hp are needed.
+  pokemonCards = pokemonCards.map((pokemon) => {
+    pokemon.pokemonInfo.currHp = pokemon.pokemonInfo.hp;
+    pokemon.pokemonInfo.maxHp = pokemon.pokemonInfo.hp;
+    // To store item effects applied during battle
+    pokemon.pokemonInfo.itemEffects = [];
+    delete pokemon.pokemonInfo.hp;
+  });
   // TODO: Shuffle result
   return pokemonCards.concat(itemCards).concat(energyCards);
 }
