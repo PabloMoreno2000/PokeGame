@@ -12,18 +12,25 @@ let types = undefined;
 
 // @route  GET api/game
 // @desct
-// @access Public/non-authentication/no-token
+// @access Private
 // Long polling for two players
-router.get("/", async (req, res) => {});
+router.get("/gameState/:gameId", [auth], async (req, res) => {
+  try {
+    const game = games[req.params.gameId];
+    if (!game) {
+      return res.status(400).send("Invalid game id");
+    }
 
-router.get("/gameState/:id", async (req, res) => {
-  // reutrn game state
-  let x = 1;
-});
+    const userId = req.user.id;
+    if (userId != game["player1"].id && req.user.id != game["player2"].id) {
+      return res.status(403).send("Authorization denied");
+    }
 
-router.post("/move/:id/:player", async (req, res) => {
-  // reutrn game state
-  let x = 1;
+    res.send(game);
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).send("Server error");
+  }
 });
 
 // @route  PUT api/game/pokemonHandToBench
