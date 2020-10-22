@@ -4,8 +4,11 @@ const config = require("config");
 const { check, validationResult } = require("express-validator");
 const Card = require("../../models/Card");
 const CardType = require("../../models/CardType");
+const User = require("../../models/User");
+const auth = require("../../middleware/auth");
 let nextGameId = 0;
 let games = [];
+let types = undefined;
 
 // @route  GET api/game
 // @desct
@@ -23,12 +26,69 @@ router.post("/move/:id/:player", async (req, res) => {
   let x = 1;
 });
 
+// @route  PUT api/game/pokemonHandToBench
+// @desct Puts a certain pokemon from the hand to the next available bench position
+// @access Private
+router.put(
+  "/pokemonHandToBench",
+  [
+    auth,
+    [
+      check("gameId", "Please specify a game id").exists(),
+      check("handPosition", "Please specify a valid hand position").exists(),
+    ],
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { gameId, handPosition } = req.body;
+    const playerId = req.user.id;
+    const benchQtyLimit = 5;
+    let game = {};
+    let player = "";
+
+    const status = canPerformMove(gameId, playerId);
+    if (!status.canMove) {
+      return res.status(400).json({ msg: status.message });
+    } else {
+      game = status.game;
+      player = status.player;
+    }
+
+    if (game[player].bench.length >= 5) {
+      return res
+        .status(400)
+        .json({ msg: "Limit of pokemons in bench reached" });
+    }
+
+    // handPosition does starts counting at 0
+    if (game[player].hand.length < handPosition) {
+      return res.status(404).json({ msg: "Card not found in hand" });
+    }
+    // Add it to the bench, remove it from the hand if it is a pokemon
+    // Splices removes/modifies the array and return the removed elements
+    const types = await getTypes();
+    if (game[player].hand[handPosition].type == types.pokemon.id) {
+      const card = game[player].hand.splice(handPosition, 1);
+      game[player].bench.push(card);
+    } else {
+      return res.status(400).json({ msg: "Card is not a pokemon" });
+    }
+
+    res.send("Hey!");
+  }
+);
+
+// TODO: Assure at least one pokemon to be in the hand of each player
 // TODO: Check that the IDs are valid in the DB
 router.post(
   "/newGame",
   [
-    check("player1", "Please specify a valid first player").exists(),
-    check("player2", "Please specify a valid second player").exists(),
+    check("player1", "Please specify a valid first player").isMongoId(),
+    check("player2", "Please specify a valid second player").isMongoId(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -39,6 +99,13 @@ router.post(
     const deckN = 100;
     const playerHand = 8;
     const { player1, player2 } = req.body;
+
+    try {
+      let temp = await User.findById(player1);
+      temp = await User.findById(player2);
+    } catch (error) {
+      return res.status(400).json({ msg: "Invalid users' id" });
+    }
 
     // Create deck
     let deck = await createDeck(deckN + playerHand * 2, 0.25, 0.25, 0.5);
@@ -55,18 +122,18 @@ router.post(
     const game = {
       player1: {
         id: player1,
-        cards: cards1,
+        hand: cards1,
         bench: [],
         activePokemon: {},
       },
       player2: {
         id: player2,
-        cards: cards2,
+        hand: cards2,
         bench: [],
         activePokemon: {},
       },
       deck,
-      turn: false,
+      turn: true,
       gameId: nextGameId,
     };
     games[nextGameId] = game;
@@ -135,12 +202,43 @@ async function createDeck(cardsNo, items, pokemons, energies) {
 }
 
 async function getTypes() {
-  let types = {
-    pokemon: await CardType.findOne({ name: "pokemon" }),
-    item: await CardType.findOne({ name: "item" }),
-    energy: await CardType.findOne({ name: "energy" }),
-  };
+  if (!types) {
+    types = {
+      pokemon: await CardType.findOne({ name: "pokemon" }),
+      item: await CardType.findOne({ name: "item" }),
+      energy: await CardType.findOne({ name: "energy" }),
+    };
+  }
   return types;
+}
+
+function canPerformMove(gameId, playerId) {
+  let result = {};
+  const game = games[gameId];
+  if (!game) {
+    result.message = "Invalid game id";
+    result.canMove = false;
+  } else if (playerId != game.player1.id && playerId != game.player2.id) {
+    result.message = "Player isn't part of the match";
+    result.canMove = false;
+  } else if (
+    (game.turn && playerId == game.player2.id) ||
+    (!game.turn && playerId == game.player1.id)
+  ) {
+    result.message = "It's not the turn of this player";
+    result.canMove = false;
+  } else {
+    if (game.turn) {
+      result.player = "player1";
+    } else {
+      result.player = "player2";
+    }
+    result.message = "";
+    result.game = game;
+    result.canMove = true;
+  }
+
+  return result;
 }
 
 module.exports = router;
