@@ -191,7 +191,7 @@ router.put(
         switch (effect.attribute) {
           case "instant-heal":
             pokeInfo.currHp = Math.min(
-              pokeINfo.maxHp,
+              pokeInfo.maxHp,
               pokeInfo.currHp + effect.boost
             );
             break;
@@ -199,14 +199,19 @@ router.put(
           case "turn-healing":
             pokeInfo.itemEffects.push({
               name: "turn-healing",
+              boost: effect.boost,
               turnsLeft: 5,
             });
             break;
 
           default:
+            console.log(`Item effect ${effect.attribute} not found`);
         }
       });
     };
+
+    applyItemToPokemon(card, game[player].activePokemon);
+    res.send(game);
   }
 );
 
@@ -316,6 +321,21 @@ async function createDeck(cardsNo, items, pokemons, energies) {
   let itemCards = await Card.find({ type: types.item.id });
   let energyCards = await Card.find({ type: types.energy.id });
 
+  // Convert them to jsons to modify the "schema" and avoid risks
+  pokemonCards = JSON.parse(JSON.stringify(pokemonCards));
+  itemCards = JSON.parse(JSON.stringify(itemCards));
+  energyCards = JSON.parse(JSON.stringify(energyCards));
+
+  // In the database is okay to have "hp", in the game current hp and max hp are needed.
+  pokemonCards = pokemonCards.map((pokemon) => {
+    pokemon.pokemonInfo.currHp = pokemon.pokemonInfo.hp;
+    pokemon.pokemonInfo.maxHp = pokemon.pokemonInfo.hp;
+    // To store item effects applied during battle
+    pokemon.pokemonInfo.itemEffects = [];
+    delete pokemon.pokemonInfo.hp;
+    return pokemon;
+  });
+
   // If there's a lack of cards, clone them
   pokemonCards = expandUntil(pokemonCards, pokemonN * repeatProb);
   itemCards = expandUntil(itemCards, itemN * repeatProb);
@@ -326,16 +346,10 @@ async function createDeck(cardsNo, items, pokemons, energies) {
   itemCards = getRandom(itemCards, itemN);
   energyCards = getRandom(energyCards, energyN);
 
-  // In the database is okay to have "hp", in the game current hp and max hp are needed.
-  pokemonCards = pokemonCards.map((pokemon) => {
-    pokemon.pokemonInfo.currHp = pokemon.pokemonInfo.hp;
-    pokemon.pokemonInfo.maxHp = pokemon.pokemonInfo.hp;
-    // To store item effects applied during battle
-    pokemon.pokemonInfo.itemEffects = [];
-    delete pokemon.pokemonInfo.hp;
-  });
   // TODO: Shuffle result
-  return pokemonCards.concat(itemCards).concat(energyCards);
+  return pokemonCards
+    .concat(itemCards, energyCards)
+    .sort(() => 0.5 - Math.random());
 }
 
 async function getTypes() {
