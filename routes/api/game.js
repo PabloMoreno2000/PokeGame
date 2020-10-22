@@ -64,7 +64,7 @@ router.put(
         .json({ msg: "Limit of pokemons in bench reached" });
     }
 
-    // handPosition does starts counting at 0
+    // handPosition does start counting at 0
     if (game[player].hand.length < handPosition) {
       return res.status(404).json({ msg: "Card not found in hand" });
     }
