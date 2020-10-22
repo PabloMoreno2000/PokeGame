@@ -65,7 +65,7 @@ router.put(
     }
 
     // handPosition does start counting at 0
-    if (game[player].hand.length < handPosition) {
+    if (handPosition >= game[player].hand.length) {
       return res.status(404).json({ msg: "Card not found in hand" });
     }
     // Add it to the bench, remove it from the hand if it is a pokemon
@@ -78,7 +78,57 @@ router.put(
       return res.status(400).json({ msg: "Card is not a pokemon" });
     }
 
-    res.send("Hey!");
+    res.send(game);
+  }
+);
+
+// @route  PUT api/game/pokemonBenchToActive
+// @desct Puts a pokemon on the bench as active, if the active slot is empty
+// @access Private
+router.put(
+  "/pokemonBenchToActive",
+  [
+    auth,
+    [
+      check("gameId", "Please specify a game id").exists(),
+      check("benchPosition", "Please specify a valid hand position").exists(),
+    ],
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { gameId, benchPosition } = req.body;
+    const playerId = req.user.id;
+    let game = {};
+    let player = "";
+
+    const status = canPerformMove(gameId, playerId);
+    if (!status.canMove) {
+      return res.status(400).json({ msg: status.message });
+    } else {
+      game = status.game;
+      player = status.player;
+    }
+
+    if (game[player].bench.length == 0) {
+      return res.status(400).json({ msg: "There are no pokemons in bench" });
+    }
+
+    // bench position starts from 0
+    if (benchPosition >= game[player].bench.length) {
+      return res.status(400).json({ msg: "Invalid bench position" });
+    }
+    if (isObjectEmpty(game[player].activePokemon)) {
+      const card = game[player].bench.splice(benchPosition, 1);
+      game[player].activePokemon = card;
+    } else {
+      return res.status(400).json({ msg: "There's already an active pokemon" });
+    }
+
+    return res.json(game);
   }
 );
 
@@ -141,6 +191,10 @@ router.post(
     res.send(game);
   }
 );
+
+function isObjectEmpty(object) {
+  return Object.keys(object).length == 0;
+}
 
 // Generate a hand from the deck.
 // Returns an object of the form { hand, resultingDeck }.
