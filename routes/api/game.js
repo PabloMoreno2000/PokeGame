@@ -58,7 +58,7 @@ router.put(
       player = status.player;
     }
 
-    if (game[player].bench.length >= 5) {
+    if (game[player].bench.length >= benchQtyLimit) {
       return res
         .status(400)
         .json({ msg: "Limit of pokemons in bench reached" });
