@@ -33,6 +33,73 @@ router.get("/gameState/:gameId", [auth], async (req, res) => {
   }
 });
 
+// @route  PUT api/game/attack
+// @desct  Authenticated player's active pokemon attacks enemy player's active pokemon
+// @access Private
+router.post(
+  "/attack",
+  [
+    auth,
+    [
+      check("attackPos", "Invalid attack").not().isEmpty(),
+      check("gameId", "Insert a game id").not().isEmpty(),
+    ],
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { attackPos, gameId } = req.body;
+    const playerId = req.user.id;
+    let game = {};
+    let player = "";
+
+    const status = canPerformMove(gameId, playerId);
+    if (!status.canMove) {
+      return res.status(400).json({ msg: status.message });
+    } else {
+      game = status.game;
+      player = status.player;
+    }
+
+    // Validate current player's attack
+    const currPokemon = game[player].activePokemon;
+    if (attackPos < 0 || attackPos >= currPokemon.pokemonInfo.attacks.length) {
+      return res.status(400).json({ msg: "Invalid attack position" });
+    }
+
+    // Validate there's enough ENERGY with the pokemon
+
+    // Subtract health from enemy active pokemon
+    const enemyPlayer = player == "player1" ? "player2" : "player1";
+    const damage = currPokemon.pokemonInfo.attacks[attackPos].damage;
+    game[enemyPlayer].activePokemon.currHp = Math.max(
+      0,
+      game[enemyPlayer].activePokemon.currHp - damage
+    );
+
+    // If enemy pokemon was defeated
+    if (game[enemyPlayer].activePokemon.currHp == 0) {
+      // Remove enemy pokemon
+      game[enemyPlayer].activePokemon = {};
+
+      // If there are no pokemons in bench
+      if (game[enemyPlayer].bench.length == 0) {
+        game.hasWon = player;
+      }
+    }
+    // Change turn after attack
+    game.turn = !game.turn;
+  }
+);
+
+// @route  PUT api/game/pokemonHandToBench
+// @desct Put energy to certain pokemon
+// @access Private
+router.post();
+
 // @route  PUT api/game/pokemonHandToBench
 // @desct Puts a certain pokemon from the hand to the next available bench position
 // @access Private
@@ -267,6 +334,7 @@ router.post(
       deck,
       turn: true,
       gameId: nextGameId,
+      hasWon: "",
     };
     games[nextGameId] = game;
     nextGameId++;
