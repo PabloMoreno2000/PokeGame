@@ -98,7 +98,6 @@ router.post(
 // @route  PUT api/game/pokemonHandToBench
 // @desct Put energy to certain pokemon
 // @access Private
-router.post();
 
 // @route  PUT api/game/pokemonHandToBench
 // @desct Puts a certain pokemon from the hand to the next available bench position
@@ -196,7 +195,8 @@ router.put(
       return res.status(404).json({ msg: "Card not found" });
     }
     if (isObjectEmpty(game[player].activePokemon)) {
-      const card = game[player].bench.splice(benchPosition, 1);
+      // Splice wraps the result in an array, get the first position
+      const card = game[player].bench.splice(benchPosition, 1)[0][0];
       game[player].activePokemon = card;
     } else {
       return res.status(400).json({ msg: "There's already an active pokemon" });
@@ -252,6 +252,7 @@ router.put(
     }
 
     const applyItemToPokemon = (item, pokemon) => {
+      pokemon = deepCopy(pokemon);
       const effects = item.itemInfo.effects;
       const pokeInfo = pokemon.pokemonInfo;
       effects.map((effect) => {
@@ -275,9 +276,14 @@ router.put(
             console.log(`Item effect ${effect.attribute} not found`);
         }
       });
+      return pokemon;
     };
 
-    applyItemToPokemon(card, game[player].activePokemon);
+    // For some reason, active pokemon is received as an array of 1 object
+    game[player].activePokemon = applyItemToPokemon(
+      card,
+      game[player].activePokemon
+    );
     res.send(game);
   }
 );
@@ -372,9 +378,9 @@ async function createDeck(cardsNo, items, pokemons, energies) {
       return array;
     }
 
-    let newArr = array;
+    let newArr = [];
     while (newArr.length < n) {
-      newArr = newArr.concat(array);
+      newArr = newArr.concat(deepCopy(array));
     }
     return newArr;
   };
@@ -458,6 +464,10 @@ function canPerformMove(gameId, playerId) {
   }
 
   return result;
+}
+
+function deepCopy(object) {
+  return JSON.parse(JSON.stringify(object));
 }
 
 module.exports = router;
