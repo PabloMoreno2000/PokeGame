@@ -36,7 +36,7 @@ router.get("/gameState/:gameId", [auth], async (req, res) => {
 // @route  PUT api/game/attack
 // @desct  Authenticated player's active pokemon attacks enemy player's active pokemon
 // @access Private
-router.post(
+router.put(
   "/attack",
   [
     auth,
@@ -70,28 +70,52 @@ router.post(
       return res.status(400).json({ msg: "Invalid attack position" });
     }
 
-    // Validate there's enough ENERGY with the pokemon
+    // TODO: Validate there's enough ENERGY with the pokemon
 
     // Subtract health from enemy active pokemon
     const enemyPlayer = player == "player1" ? "player2" : "player1";
     const damage = currPokemon.pokemonInfo.attacks[attackPos].damage;
-    game[enemyPlayer].activePokemon.currHp = Math.max(
+    game[enemyPlayer].activePokemon.pokemonInfo.currHp = Math.max(
       0,
-      game[enemyPlayer].activePokemon.currHp - damage
+      game[enemyPlayer].activePokemon.pokemonInfo.currHp - damage
     );
 
     // If enemy pokemon was defeated
-    if (game[enemyPlayer].activePokemon.currHp == 0) {
+    if (game[enemyPlayer].activePokemon.pokemonInfo.currHp == 0) {
       // Remove enemy pokemon
       game[enemyPlayer].activePokemon = {};
 
       // If there are no pokemons in bench
       if (game[enemyPlayer].bench.length == 0) {
         game.hasWon = player;
+        return res.send(game);
       }
     }
     // Change turn after attack
-    game.turn = !game.turn;
+    const switchTurn = () => {
+      // Technically this is the start of the next turn (of the enemy player)
+      game.turn = !game.turn;
+
+      // Until now just the item pkm has item effects, and it can't return to bench
+      const enemyPkm = game[enemyPlayer].activePokemon;
+      const effects = enemyPkm.pokemonInfo.itemEffects;
+      const applyAction = {
+        "turn-healing": (boost, pokemon) =>
+          (pokemon.pokemonInfo.currHp = Math.min(
+            pokemon.pokemonInfo.maxHp,
+            pokemon.pokemonInfo.currHp + boost
+          )),
+      };
+
+      effects.map((effect) => {
+        applyAction[effect.name](effect.boost, enemyPkm);
+        if (--effect.turnsLeft == 0) {
+          delete effect;
+        }
+      });
+    };
+    switchTurn();
+    res.send(game);
   }
 );
 
@@ -156,7 +180,7 @@ router.put(
 );
 
 // @route  PUT api/game/pokemonBenchToActive
-// @desct Puts a pokemon on the bench as active, if the active slot is empty
+// @desct Puts a pokemon on the bench as active, if the active slot is empty, turn ends after this.
 // @access Private
 router.put(
   "/pokemonBenchToActive",
@@ -198,6 +222,7 @@ router.put(
       // Splice wraps the result in an array, get the first position
       const card = game[player].bench.splice(benchPosition, 1)[0][0];
       game[player].activePokemon = card;
+      game.turn = !game.turn;
     } else {
       return res.status(400).json({ msg: "There's already an active pokemon" });
     }
