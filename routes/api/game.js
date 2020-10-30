@@ -14,6 +14,7 @@ let types = undefined;
 // @desct
 // @access Private
 // Long polling for two players
+// game is the state of the game
 router.get("/gameState/:gameId", [auth], async (req, res) => {
   try {
     const game = games[req.params.gameId];
@@ -71,7 +72,8 @@ router.put(
     }
 
     // TODO: Validate there's enough ENERGY with the pokemon
-
+    
+    
     // Subtract health from enemy active pokemon
     const enemyPlayer = player == "player1" ? "player2" : "player1";
     const damage = currPokemon.pokemonInfo.attacks[attackPos].damage;
@@ -429,6 +431,7 @@ async function createDeck(cardsNo, items, pokemons, energies) {
   pokemonCards = pokemonCards.map((pokemon) => {
     pokemon.pokemonInfo.currHp = pokemon.pokemonInfo.hp;
     pokemon.pokemonInfo.maxHp = pokemon.pokemonInfo.hp;
+    pokemon.pokemonInfo.currEnergy = 0;
     // To store item effects applied during battle
     pokemon.pokemonInfo.itemEffects = [];
     delete pokemon.pokemonInfo.hp;
