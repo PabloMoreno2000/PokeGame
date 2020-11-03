@@ -1,0 +1,90 @@
+
+body,
+html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: #FFE066;
+}
+.titleUwU {
+    font-size: 250%;
+}
+.user_card {
+    height: 400px;
+    width: 350px;
+    margin-top: auto;
+    margin-bottom: auto;
+    background: var(--primary);
+    color: white;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    padding: 10px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    -webkit-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    -moz-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    border-radius: 5px;
+
+}
+.user_card  a {
+    color: orange;
+}
+.brand_logo_container {
+    position: absolute;
+    height: 170px;
+    width: 170px;
+    top: -75px;
+    border-radius: 50%;
+    background: #FF8200;
+    padding: 10px;
+    text-align: center;
+}
+.brand_logo {
+    height: 150px;
+    width: 150px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+.form_container {
+    margin-top: 100px;
+}
+
+.login_btn {
+    width: 100%;
+    background-color:#FF8200;
+    border-color:#c26503;
+}
+.login_btn:focus {
+    background-color:#e97902;
+    border-color: #cf6b00;
+    box-shadow:0 0 0 .2rem rgba(196, 135, 56, 0.5)
+}
+.login_btn.disabled,.btn-primary:disabled{
+    background-color:#FF8200;border-color:#FF8200
+}
+.login_btn:not(:disabled):not(.disabled).active,.login_btn:not(:disabled):not(.disabled):active,.show>.login_btn.dropdown-toggle{
+    background-color:#cf6b00;border-color:#81530f
+}
+.login_btn:hover {
+    background-color:#e97902;
+    border-color: #cf6b00;
+}
+
+.login_container {
+    padding: 0 2rem;
+}
+.input-group-text {
+    background: #FF8200 !important;
+    color: white !important;
+    border: 0 !important;
+    border-radius: 0.25rem 0 0 0.25rem !important;
+}
+.input_user,
+.input_pass:focus {
+    box-shadow: none !important;
+    outline: 0px !important;
+}
+.custom-checkbox .custom-control-input:checked~.custom-control-label::before {
+    background-color:#FF8200 !important;
+}
