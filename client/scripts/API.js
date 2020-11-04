@@ -32,7 +32,7 @@ const API = {
   auth: {
     getAuthUser: () => db("GET", "/api/users/", null, true, {}),
     postAuthUser: (username, password) =>
-      db("POST", "/api/auth/", { username, password }, false, {}),
+      db("POST", "/api/auth/", { name: username, password }, false, {}),
   },
   users: {
     createUser: (name, email, password) =>

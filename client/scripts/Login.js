@@ -1,5 +1,5 @@
 const usernameId = "username-input";
-const passwordId = "password-id";
+const passwordId = "password-input";
 const btnLoginId = "login-button";
 const formId = "form-login";
 
