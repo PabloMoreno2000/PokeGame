@@ -70,4 +70,12 @@ const API = {
     attack: (attackPos, gameId) =>
       db("PUT", "/api/game/attack", { attackPos, gameId }, true, {}),
   },
+  lobby: {
+    getState: (lobbyId) =>
+      db("GET", `/api/lobby/getState/${lobbyId}`, null, false, {}),
+    createLobby: () => db("POST", "/api/lobby/create", {}, false, {}),
+    joinLobby: (lobbyId) =>
+      db("PUT", `/api/lobby/join/${lobbyId}`, {}, true, {}),
+    getAllLobies: () => db("GET", "/api/lobby/getAll", {}, false, {}),
+  },
 };
