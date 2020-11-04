@@ -16,6 +16,6 @@ app.use("/admin/managetypes", require("./routes/admin/managetypes"));
 app.use("/api/users", require("./routes/api/users"));
 app.use("/api/auth", require("./routes/api/auth"));
 app.use("/api/game", require("./routes/api/game"));
-
+app.use("/api/lobby",require("./routes/api/lobby"));
 
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
