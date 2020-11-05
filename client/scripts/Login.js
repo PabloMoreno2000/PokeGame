@@ -1,7 +1,6 @@
 const usernameId = "username-input";
 const passwordId = "password-input";
 const btnLoginId = "login-button";
-const formId = "form-login";
 
 function byId(itemId) {
   return $(`#${itemId}`);
@@ -17,6 +16,8 @@ $(document).ready(async () => {
     let res = {};
     try {
       res = await API.auth.postAuthUser(username, password);
+      const token = res.data.token;
+      localStorage.setItem("x-auth-token", token);
     } catch (error) {
       console.log(error);
       return;
