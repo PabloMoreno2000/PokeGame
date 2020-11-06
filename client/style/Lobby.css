@@ -40,6 +40,9 @@ html {
     color: white;
 }
 
+.light {
+    color: rgb(211, 210, 210);
+}
 .lobby-btn {
     background-color:#FF8200;
     border-color:#c26503;
