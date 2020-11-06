@@ -1,4 +1,3 @@
-const gameId = "gameId";
 function byId(itemId) {
   return $(`#${itemId}`);
 }
@@ -6,13 +5,13 @@ function byId(itemId) {
 function updateFrontend(game) {}
 
 $(document).ready(async () => {
-  const gameNumber = byId(gameId).val();
+  const gameId = localStorage.getItem("game-id");
 
   // Refresh lobby until both players are ready
   async function refreshGame() {
     let resp = {};
     try {
-      resp = await API.game.getGameState(gameNumber);
+      resp = await API.game.getGameState(gameId);
     } catch (error) {
       console.log(error);
     }
