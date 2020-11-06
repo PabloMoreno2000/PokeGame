@@ -1,0 +1,58 @@
+body,
+html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: #FFE066;
+}
+.styleTitle {
+    font-family: 'Permanent Marker', cursive;
+}
+.titleUwU {
+    font-size: 250%;
+}
+
+.uwuCard {
+    background: var(--primary);
+    color: white;
+}
+
+.home-btn {
+    background-color:#FF8200;
+    border-color:#c26503;
+}
+.home-btn:focus {
+    background-color:#e97902;
+    border-color: #cf6b00;
+    box-shadow:0 0 0 .2rem rgba(196, 135, 56, 0.5)
+}
+.home-btn.disabled,.btn-primary:disabled{
+    background-color:#FF8200;border-color:#FF8200
+}
+.home-btn:not(:disabled):not(.disabled).active,.home-btn:not(:disabled):not(.disabled):active,.show>.home-btn.dropdown-toggle{
+    background-color:#cf6b00;border-color:#81530f
+}
+.home-btn:hover {
+    background-color:#e97902;
+    border-color: #cf6b00;
+}
+
+.uwuCard  a {
+    color: orange;
+}
+
+.input-group-text {
+    background: #FF8200 !important;
+    color: white !important;
+    border: 0 !important;
+    border-radius: 0.25rem 0 0 0.25rem !important;
+}
+
+.input_user,
+.input_pass:focus {
+    box-shadow: none !important;
+    outline: 0px !important;
+}
+.custom-checkbox .custom-control-input:checked~.custom-control-label::before {
+    background-color:#FF8200 !important;
+}
