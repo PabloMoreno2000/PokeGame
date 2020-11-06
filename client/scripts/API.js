@@ -77,5 +77,7 @@ const API = {
     joinLobby: (lobbyId) =>
       db("PUT", `/api/lobby/join/${lobbyId}`, {}, true, {}),
     getAllLobies: () => db("GET", "/api/lobby/getAll", {}, false, {}),
+    setReady: (lobbyId) =>
+      db("GET", `/api/lobby/ready/${lobbyId}`, null, true, {}),
   },
 };

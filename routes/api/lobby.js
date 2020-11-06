@@ -70,4 +70,17 @@ router.get("/getAll", function (req, res) {
   res.json(rooms);
 });
 
+router.get("/ready/:id", auth, function (req, res) {
+  const userId = req.user.id;
+  const room = rooms.get(pasrseInt(req.params.id));
+  if (userId == room.player1) {
+    room.ready1 = !room.ready1;
+  } else if (userId == room.player2) {
+    room.ready2 = !room.ready2;
+  } else {
+    res.status(403).send("Access deniend");
+  }
+  res.json(room);
+});
+
 module.exports = router;
