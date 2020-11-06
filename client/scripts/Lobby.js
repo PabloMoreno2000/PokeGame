@@ -16,7 +16,6 @@ $(document).ready(async () => {
     });
 
   longPolling = async () => {
-    
     let resp = {}
     try {
         resp = await API.lobby.getState(lobbyNumber)
@@ -26,6 +25,7 @@ $(document).ready(async () => {
     return resp
   };
 
+  // Refresh lobby until both players are ready
   function refreshGame (){
       const resp = await longPolling();
       //la promesa del gameUpdate
@@ -36,6 +36,14 @@ $(document).ready(async () => {
           const lobby = resp.data;
           if(lobby.ready1 && lobby.ready2){
             // create the game
+            let resp = {}
+            try {
+               resp = await API.game.startNewGame(lobby.player1, lobby.player2); 
+            } catch (error) {
+                console.log(error);
+            }
+            const game = resp.data;
+            // TODO: pass game id and go to game screen
           }
           else {
             updateFrontend(lobby);
