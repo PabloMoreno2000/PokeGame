@@ -8,16 +8,15 @@ function byId(itemId) {
 
 function updateFrontend(lobby) {
   const username = localStorage.getItem("username");
-  const player = username == lobby.player1._id ? "player1" : "player2";
+  const player = username == lobby.player1.name ? "player1" : "player2";
   const rival = player == "player1" ? "player2" : "player1";
-
   // Update button
   const isPlayerReady = player == "player1" ? lobby.ready1 : lobby.ready2;
-  byId(btnReady).val(isPlayerReady ? "¡Listo!" : "Presiona para empezar");
+  byId(btnReady).text(isPlayerReady ? "¡Listo!" : "Presiona para empezar");
   // Update waiting "Player" tag. Put an empty string if there's no other player
-  byId(playerUsername).val(lobby[rival] ? lobby[rival].name : "");
+  byId(playerUsername).text(lobby[rival] ? lobby[rival].name : "");
   // Update lobbyId
-  byId(gameId).val(lobby.roomId);
+  byId(gameId).text(lobby.roomId);
 }
 
 $(document).ready(async () => {
@@ -55,7 +54,7 @@ $(document).ready(async () => {
         // TODO: pass game id and go to game screen
       } else {
         updateFrontend(lobby);
-        setTimeout(refreshGame, 5000);
+        setTimeout(refreshGame, 1000);
       }
     }
   }

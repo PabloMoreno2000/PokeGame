@@ -9,9 +9,12 @@ $(document).ready(async () => {
   byId(createGame).click(async () => {
     // Create lobby
     const lobby = await API.lobby.createLobby();
-    console.log(lobby);
     // Put player in lobby
-    await API.lobby.joinLobby(lobby.data.roomId);
+    const resp = await API.lobby.joinLobby(lobby.data.roomId);
+    // Save lobby id
+    localStorage.setItem("lobby-id", lobby.data.roomId);
+    console.log(resp);
     // TODO: Go to lobby window
+    window.location.replace("../Lobby.html");
   });
 });
