@@ -11,7 +11,7 @@ $(document).ready(async () => {
     const lobby = await API.lobby.createLobby();
     console.log(lobby);
     // Put player in lobby
-    await API.lobby.joinLobby(lobby.roomId);
+    await API.lobby.joinLobby(lobby.data.roomId);
     // TODO: Go to lobby window
   });
 });
