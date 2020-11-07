@@ -40,7 +40,7 @@ const API = {
   },
   game: {
     startNewGame: (player1, player2) =>
-      db("POST", "/api/game/", { player1, player2 }, false, {}),
+      db("POST", "/api/game/newGame", { player1, player2 }, false, {}),
     movePkmHandToBench: (gameId, handPosition) =>
       db(
         "PUT",

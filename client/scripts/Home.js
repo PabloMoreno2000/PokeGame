@@ -1,20 +1,31 @@
 const createGame = "create-game";
 const joinGame = "join-game";
+const lobbyInput = "lobby-id-input";
 
 function byId(itemId) {
   return $(`#${itemId}`);
 }
 
 $(document).ready(async () => {
+  async function joinLobby(lobbyId) {
+    // Put player in lobby
+    const resp = await API.lobby.joinLobby(lobbyId);
+    // Save lobby id
+    localStorage.setItem("lobby-id", lobbyId);
+    console.log(resp);
+    // Go to lobby window
+    window.location.replace("../Lobby.html");
+  }
+
   byId(createGame).click(async () => {
     // Create lobby
     const lobby = await API.lobby.createLobby();
-    // Put player in lobby
-    const resp = await API.lobby.joinLobby(lobby.data.roomId);
-    // Save lobby id
-    localStorage.setItem("lobby-id", lobby.data.roomId);
-    console.log(resp);
-    // TODO: Go to lobby window
-    window.location.replace("../Lobby.html");
+    await joinLobby(lobby.data.roomId);
+  });
+
+  byId(joinGame).click(async () => {
+    // Get lobby
+    const lobbyId = byId(lobbyInput).val();
+    await joinLobby(lobbyId);
   });
 });

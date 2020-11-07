@@ -17,6 +17,7 @@ function updateFrontend(lobby) {
   byId(playerUsername).text(lobby[rival] ? lobby[rival].name : "");
   // Update lobbyId
   byId(gameId).text(lobby.roomId);
+  console.log(lobby);
 }
 
 $(document).ready(async () => {
@@ -46,7 +47,10 @@ $(document).ready(async () => {
         // create the game
         let resp = {};
         try {
-          resp = await API.game.startNewGame(lobby.player1, lobby.player2);
+          resp = await API.game.startNewGame(
+            lobby.player1._id,
+            lobby.player2._id
+          );
         } catch (error) {
           console.log(error);
         }
