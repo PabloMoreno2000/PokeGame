@@ -4,6 +4,7 @@ const config = require("config");
 const { check, validationResult } = require("express-validator");
 const auth = require("../../middleware/auth");
 const User = require("../../models/User");
+const { Router } = require("express");
 // counter for lobby ids
 let nextId = 0;
 
@@ -96,6 +97,18 @@ router.put("/ready/:id", auth, function (req, res) {
     room.ready2 = !room.ready2;
   } else {
     return res.status(403).send("Access deniend");
+  }
+  res.json(room);
+});
+
+router.put("/setCreatedGame/:lobbyId/:gameId", auth, function (req, res) {
+  const userId = req.user.id;
+  const room = rooms.get(parseInt(req.params.lobbyId));
+  // Just players in lobby can set a game id
+  if (userId == room.player1._id || userId == room.player2._id) {
+    room.createdGameId = req.params.gameId;
+  } else {
+    return res.status(403).send("Access denied");
   }
   res.json(room);
 });

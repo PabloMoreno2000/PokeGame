@@ -79,5 +79,13 @@ const API = {
     getAllLobies: () => db("GET", "/api/lobby/getAll", {}, false, {}),
     setReady: (lobbyId) =>
       db("PUT", `/api/lobby/ready/${lobbyId}`, null, true, {}),
+    setCreatedGame: (lobbyId, gameId) =>
+      db(
+        "PUT",
+        `/api/lobby/setCreatedGame/${lobbyId}/${gameId}`,
+        null,
+        true,
+        {}
+      ),
   },
 };
