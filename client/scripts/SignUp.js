@@ -31,6 +31,7 @@ $(document).ready(async () => {
       res = await API.users.createUser(username, email, password);
       const token = res.data.token;
       localStorage.setItem("x-auth-token", token);
+      localStorage.setItem("username", username);
     } catch (error) {
       console.log(error);
       return;

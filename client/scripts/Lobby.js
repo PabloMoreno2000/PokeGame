@@ -1,9 +1,24 @@
 const btnReady = "button-ready";
+const gameId = "game-id";
+const playerUsername = "player-username";
+
 function byId(itemId) {
   return $(`#${itemId}`);
 }
 
-function updateFrontend(lobby) {}
+function updateFrontend(lobby) {
+  const username = localStorage.getItem("username");
+  const player = username == lobby.player1._id ? "player1" : "player2";
+  const rival = player == "player1" ? "player2" : "player1";
+
+  // Update button
+  const isPlayerReady = player == "player1" ? lobby.ready1 : lobby.ready2;
+  byId(btnReady).val(isPlayerReady ? "¡Listo!" : "Presiona para empezar");
+  // Update waiting "Player" tag. Put an empty string if there's no other player
+  byId(playerUsername).val(lobby[rival] ? lobby[rival].name : "");
+  // Update lobbyId
+  byId(gameId).val(lobby.roomId);
+}
 
 $(document).ready(async () => {
   const lobbyId = localStorage.getItem("lobby-id");
@@ -24,9 +39,8 @@ $(document).ready(async () => {
   // Refresh lobby until both players are ready
   async function refreshGame() {
     const resp = await longPolling();
-    //la promesa del gameUpdate
     if (!resp.data) {
-      // error
+      console.log("No data in lobby longpolling");
     } else {
       const lobby = resp.data;
       if (lobby.ready1 && lobby.ready2) {
