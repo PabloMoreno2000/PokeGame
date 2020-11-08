@@ -18,6 +18,7 @@ let types = undefined;
 router.get("/gameState/:gameId", [auth], async (req, res) => {
   try {
     const game = games[req.params.gameId];
+    let gameCopy = deepCopy(game);
     if (!game) {
       return res.status(400).send("Invalid game id");
     }
@@ -27,7 +28,40 @@ router.get("/gameState/:gameId", [auth], async (req, res) => {
       return res.status(403).send("Authorization denied");
     }
 
-    res.send(game);
+    const types = await getTypes();
+    const setTypeCardInfo = (card) => {
+      let cardCopy = deepCopy(card);
+      if (cardCopy.type == types.pokemon.id) {
+        cardCopy.type = types.pokemon;
+      } else if (cardCopy.type == types.item.id) {
+        cardCopy.type = types.item;
+      } else {
+        cardCopy.type = types.energy;
+      }
+      return cardCopy;
+    };
+
+    // Put the type info of each game
+    gameCopy.player1.hand = gameCopy.player1.hand.map((card) => {
+      return setTypeCardInfo(card);
+    });
+    gameCopy.player2.hand = gameCopy.player2.hand.map((card) => {
+      return setTypeCardInfo(card);
+    });
+    gameCopy.player1.bench = gameCopy.player1.bench.map((card) => {
+      return setTypeCardInfo(card);
+    });
+    gameCopy.player2.bench = gameCopy.player2.bench.map((card) => {
+      return setTypeCardInfo(card);
+    });
+    gameCopy.player1.activePokemon = setTypeCardInfo(
+      gameCopy.player1.activePokemon
+    );
+    gameCopy.player2.activePokemon = setTypeCardInfo(
+      gameCopy.player2.activePokemon
+    );
+
+    res.send(gameCopy);
   } catch (error) {
     console.error(error.message);
     return res.status(500).send("Server error");
@@ -72,8 +106,7 @@ router.put(
     }
 
     // TODO: Validate there's enough ENERGY with the pokemon
-    
-    
+
     // Subtract health from enemy active pokemon
     const enemyPlayer = player == "player1" ? "player2" : "player1";
     const damage = currPokemon.pokemonInfo.attacks[attackPos].damage;

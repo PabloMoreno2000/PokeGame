@@ -11,6 +11,7 @@ function getMatchInfo(lobby) {
   const player = username == lobby.player1.name ? "player1" : "player2";
   const rival = player == "player1" ? "player2" : "player1";
   const isPlayerReady = player == "player1" ? lobby.ready1 : lobby.ready2;
+  localStorage.setItem("player", player);
   return { username, player, rival, isPlayerReady };
 }
 
