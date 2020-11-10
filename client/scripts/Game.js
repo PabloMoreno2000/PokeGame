@@ -47,9 +47,47 @@ function htmlToNode(htmlText) {
 
   */
 //name, weight, experience, height, types, img
-let get_pokemon_card = (pokemon, handPos) => {
+let get_pokemon_card = (pokemon, handPos, config = {}) => {
   const { name, photo, pokemonInfo } = pokemon;
   const { currEnergy, currHp, maxHp } = pokemonInfo;
+  const modeClickHandlers = {
+    hand: () => {
+      // Ask to put pokemon in bench
+      let bodyInfo = document.createElement("div");
+      bodyInfo.appendChild(
+        document.createTextNode("Click the button to put pokemon to bench")
+      );
+      let benchButton = document.createElement("button");
+      benchButton.className = "btn btn-primary";
+      benchButton.setAttribute("data-dismiss", "modal");
+      benchButton.innerHTML = "PUT";
+      benchButton.addEventListener("click", async (event) => {
+        let resp = {};
+        try {
+          // TODO: Put hand position
+          resp = await API.game.movePkmHandToBench(
+            localStorage.getItem("game-id"),
+            handPos
+          );
+          console.log(resp);
+          alert("Pokemon moved");
+        } catch (error) {
+          alert("Espera a que sea tu turno y no tengas pkm activo");
+          console.log(error);
+        }
+      });
+      setModalInfo(bodyInfo, `Adding ${name} to bench`, benchButton);
+
+      // Add modal attack data when card image is clicked
+      //setModalInfo(pokemonAttacks, "Choose an attack");
+    },
+  };
+
+  // Default mode is to prepare a hand card. There's also bench and active
+  const mode =
+    config.mode && modeClickHandlers.hasOwnProperty(config.mode)
+      ? config.mode
+      : "hand";
 
   let card = document.createElement("div");
 
@@ -76,36 +114,7 @@ let get_pokemon_card = (pokemon, handPos) => {
     pokemonAttacks.appendChild(attkDiv);
   });
 
-  image.addEventListener("click", (event) => {
-    // Ask to put pokemon in bench
-    let bodyInfo = document.createElement("div");
-    bodyInfo.appendChild(
-      document.createTextNode("Click the button to put pokemon to bench")
-    );
-    let benchButton = document.createElement("button");
-    benchButton.className = "btn btn-primary";
-    benchButton.setAttribute("data-dismiss", "modal");
-    benchButton.innerHTML = "PUT";
-    benchButton.addEventListener("click", async (event) => {
-      let resp = {};
-      try {
-        // TODO: Put hand position
-        resp = await API.game.movePkmHandToBench(
-          localStorage.getItem("game-id"),
-          handPos
-        );
-        console.log(resp);
-        alert("Pokemon moved");
-      } catch (error) {
-        alert("Espera a que sea tu turno y no tengas pkm activo");
-        console.log(error);
-      }
-    });
-    setModalInfo(bodyInfo, `Adding ${name} to bench`, benchButton);
-
-    // Add modal attack data when card image is clicked
-    //setModalInfo(pokemonAttacks, "Choose an attack");
-  });
+  image.addEventListener("click", (event) => modeClickHandlers[mode]());
 
   // Energy and HP
   let pokemonText = document.createElement("div");
