@@ -56,7 +56,7 @@ let get_pokemon_card = (pokemon, handPos) => {
   // Image
   let image = document.createElement("img");
   image.src = photo;
-  image.style = "width: 250px; height: 300px;";
+  image.style = "width: 10rem";
   image.setAttribute("data-toggle", "modal");
   image.setAttribute("data-target", "#exampleModal");
   image.classList.add("card-img-top");
@@ -120,7 +120,7 @@ let get_pokemon_card = (pokemon, handPos) => {
 const get_normal_card = (card, handPos) => {
   const type = card.type.name;
   const getNode = (gameCard, image, cardBody) => {
-    return htmlToNode(`<div class="card" data-toggle="modal" data-target="#exampleModal" style="width: 18rem;">
+    return htmlToNode(`<div class="card" data-toggle="modal" data-target="#exampleModal" style="width: 10rem;">
         <img class="card-img-top" src="${image}" alt="Card image cap">
         <div class="card-body">
           <h5 class="card-title">${gameCard.name}</h5>
@@ -234,7 +234,7 @@ $(document).ready(async () => {
     const game = resp.data;
     console.log(game);
     updateFrontend(game);
-    setTimeout(refreshGame, 5000);
+    setTimeout(refreshGame, 3000);
   }
   refreshGame();
 });
