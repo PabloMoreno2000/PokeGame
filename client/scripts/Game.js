@@ -60,7 +60,6 @@ function removeOverlay() {
   const { currEnergy, currHp, maxHp } = pokemonInfo;
 
   let card = document.createElement("div");
-  card.classList.add("card");
 
   // Image
   let image = document.createElement("img");
@@ -91,19 +90,13 @@ function removeOverlay() {
     $("#modal-title").text("Choose an attack");
   });
 
-  // List separator
-  let ulCard = document.createElement("div");
-  ulCard.classList.add("list-group");
-  ulCard.classList.add("list-group-flush");
-
   // Energy and HP
   let pokemonText = document.createElement("div");
   pokemonText.classList.add("card-tex");
   pokemonText.innerHTML = `Energy: ${currEnergy} - HP: ${currHp} - MaxHp: ${maxHp}`;
 
-  ulCard.appendChild(pokemonText);
+  card.appendChild(pokemonText);
   card.appendChild(image);
-  card.appendChild(ulCard);
   return card;
 };
 
