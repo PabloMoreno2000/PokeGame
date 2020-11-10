@@ -17,12 +17,11 @@ let types = undefined;
 // game is the state of the game
 router.get("/gameState/:gameId", [auth], async (req, res) => {
   try {
-    const game = games[req.params.gameId];
-    let gameCopy = deepCopy(game);
+    const game = games[parseInt(req.params.gameId)];
     if (!game) {
       return res.status(400).send("Invalid game id");
     }
-
+    let gameCopy = deepCopy(game);
     const userId = req.user.id;
     if (userId != game["player1"].id && req.user.id != game["player2"].id) {
       return res.status(403).send("Authorization denied");
@@ -35,7 +34,7 @@ router.get("/gameState/:gameId", [auth], async (req, res) => {
         cardCopy.type = types.pokemon;
       } else if (cardCopy.type == types.item.id) {
         cardCopy.type = types.item;
-      } else {
+      } else if (cardCopy.type == types.energy.id) {
         cardCopy.type = types.energy;
       }
       return cardCopy;

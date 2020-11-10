@@ -4,10 +4,9 @@ function byId(itemId) {
 
 function getMatchInfo(game) {
   const username = localStorage.getItem("username");
-  const player = username == game.player1.name ? "player1" : "player2";
+  const player = localStorage.getItem("player");
   const rival = player == "player1" ? "player2" : "player1";
   const isPlayerReady = player == "player1" ? game.ready1 : game.ready2;
-  localStorage.setItem("player", player);
   return { username, player, rival, isPlayerReady };
 }
 
@@ -20,6 +19,12 @@ function setModalInfo(bodyNode, titleText, footerNode = null) {
   if (footerNode) {
     $("#modal-footer").append(footerNode);
   }
+}
+
+function htmlToNode(htmlText) {
+  const node = document.createElement("template");
+  node.innerHTML = htmlText.trim();
+  return node.content.firstChild;
 }
 
 /*
@@ -42,7 +47,7 @@ function setModalInfo(bodyNode, titleText, footerNode = null) {
 
   */
 //name, weight, experience, height, types, img
-let get_pokemon_card = (pokemon) => {
+let get_pokemon_card = (pokemon, handPos) => {
   /*
 function displayOverlay(text) {
     $("<table id='overlay'><tbody><tr><td>" + text + "</td></tr></tbody></table>").css({
@@ -103,16 +108,20 @@ function removeOverlay() {
     );
     let benchButton = document.createElement("button");
     benchButton.className = "btn btn-primary";
+    benchButton.setAttribute("data-dismiss", "modal");
     benchButton.innerHTML = "PUT";
     benchButton.addEventListener("click", async (event) => {
+      let resp = {};
       try {
         // TODO: Put hand position
-        let resp = await API.game.movePkmHandToBench(
-          localStorage.getItem("game-id")
+        resp = await API.game.movePkmHandToBench(
+          localStorage.getItem("game-id"),
+          handPos
         );
         console.log(resp);
         alert("Pokemon moved");
       } catch (error) {
+        alert("Espera a que sea tu turno y no tengas pkm activo");
         console.log(error);
       }
     });
@@ -132,20 +141,86 @@ function removeOverlay() {
   return card;
 };
 
+const get_normal_card = (card, handPos) => {
+  const type = card.type.name;
+  const getNode = (gameCard, image, cardBody) => {
+    return htmlToNode(`<div class="card" data-toggle="modal" data-target="#exampleModal" style="width: 18rem;">
+        <img class="card-img-top" src="${image}" alt="Card image cap">
+        <div class="card-body">
+          <h5 class="card-title">${gameCard.name}</h5>
+          <p class="card-text">${gameCard.description}</p>
+          <div>${cardBody}</div>
+        </div>
+      </div>`);
+  };
+
+  // Other than pokemon, there are just item and energy cards
+  const nodeByType = {
+    item: (card) => {
+      let cardBody = "";
+      card.itemInfo.effects.forEach((effect) => {
+        cardBody += `${effect.boost} points of ${effect.attribute}<br/>`;
+      });
+      const cardNode = getNode(
+        card,
+        "../images/potion.png",
+        `<p>${cardBody}</p>`
+      );
+      const gameId = localStorage.getItem("game-id");
+
+      // When the item card is clicked display a modal with a button to use the card
+      cardNode.addEventListener("click", (event) => {
+        try {
+          let bodyInfo = document.createElement("div");
+          bodyInfo.appendChild(
+            document.createTextNode(
+              "Click the button to use item in active pokemon"
+            )
+          );
+          let itemButton = document.createElement("button");
+          itemButton.className = "btn btn-primary";
+          itemButton.innerHTML = "USE";
+          itemButton.setAttribute("data-dismiss", "modal");
+          itemButton.addEventListener("click", async (event) => {
+            try {
+              // TODO: Put hand position
+              let resp = await API.game.useItemInActivePkm(gameId, handPos);
+              console.log(resp);
+              alert("Item used");
+            } catch (error) {
+              alert("Wait for your turn and pick and active pokemon");
+              console.log(error);
+            }
+          });
+          setModalInfo(bodyInfo, `Use ${card.name} in active pkm`, itemButton);
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      return cardNode;
+    },
+    energy: (card) => {
+      return getNode(card, "../images/potion.png", "");
+    },
+  };
+
+  if (!nodeByType.hasOwnProperty(type)) {
+    return;
+  }
+
+  const cardNode = nodeByType[type](card);
+  return cardNode;
+};
+
 /* ---------------------------- Update front end ---------------------------- */
 
 function getItemCard(item) {}
 
-let addPokemonToHand = (templateFunct, pokeCard) => {
+let addCardToHand = (templateFunct, card, handPos) => {
   let mainPlayer = document.querySelector("#main-player");
   let hand = mainPlayer.querySelector("#Hand");
-
-  //delete last cards to update
-
-  if (pokeCard.type.name == "pokemon") {
-    let cardItem = templateFunct(pokeCard);
-    hand.appendChild(cardItem);
-  }
+  let cardItem = templateFunct(card, handPos);
+  hand.appendChild(cardItem);
 };
 
 function updateFrontend(game) {
@@ -158,8 +233,14 @@ function updateFrontend(game) {
   // Put info of main player
   const playerInfo = game[player];
   // Render cards in hand
+  let handPos = 0;
   playerInfo.hand.forEach((card) => {
-    addPokemonToHand(get_pokemon_card, card);
+    if (card.type.name == "pokemon") {
+      addCardToHand(get_pokemon_card, card, handPos);
+    } else {
+      addCardToHand(get_normal_card, card, handPos);
+    }
+    handPos++;
   });
 }
 
@@ -175,6 +256,7 @@ $(document).ready(async () => {
       console.log(error);
     }
     const game = resp.data;
+    console.log(game);
     updateFrontend(game);
     setTimeout(refreshGame, 5000);
   }
