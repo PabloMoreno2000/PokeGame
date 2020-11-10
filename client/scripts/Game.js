@@ -11,6 +11,17 @@ function getMatchInfo(game) {
   return { username, player, rival, isPlayerReady };
 }
 
+function setModalInfo(bodyNode, titleText, footerNode = null) {
+  $("#modal-body").empty();
+  $("#modal-title").empty();
+  $("#modal-footer").empty();
+  $("#modal-body").append(bodyNode);
+  $("#modal-title").text(titleText);
+  if (footerNode) {
+    $("#modal-footer").append(footerNode);
+  }
+}
+
 /*
   const pokemon = {
     name: "",
@@ -83,11 +94,32 @@ function removeOverlay() {
     attkDiv.appendChild(attackButton);
     pokemonAttacks.appendChild(attkDiv);
   });
-  // Add modal attack data when card image is clicked
+
   image.addEventListener("click", (event) => {
-    $("#modal-body").empty();
-    $("#modal-body").append(pokemonAttacks);
-    $("#modal-title").text("Choose an attack");
+    // Ask to put pokemon in bench
+    let bodyInfo = document.createElement("div");
+    bodyInfo.appendChild(
+      document.createTextNode("Click the button to put pokemon to bench")
+    );
+    let benchButton = document.createElement("button");
+    benchButton.className = "btn btn-primary";
+    benchButton.innerHTML = "PUT";
+    benchButton.addEventListener("click", async (event) => {
+      try {
+        // TODO: Put hand position
+        let resp = await API.game.movePkmHandToBench(
+          localStorage.getItem("game-id")
+        );
+        console.log(resp);
+        alert("Pokemon moved");
+      } catch (error) {
+        console.log(error);
+      }
+    });
+    setModalInfo(bodyInfo, `Adding ${name} to bench`, benchButton);
+
+    // Add modal attack data when card image is clicked
+    //setModalInfo(pokemonAttacks, "Choose an attack");
   });
 
   // Energy and HP
