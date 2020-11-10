@@ -200,10 +200,10 @@ router.put(
       return res.status(404).json({ msg: "Card not found in hand" });
     }
     // Add it to the bench, remove it from the hand if it is a pokemon
-    // Splices removes/modifies the array and return the removed elements
+    // Splices removes/modifies the array and return the removed elements in an array
     const types = await getTypes();
     if (game[player].hand[handPosition].type == types.pokemon.id) {
-      const card = game[player].hand.splice(handPosition, 1);
+      const card = game[player].hand.splice(handPosition, 1)[0];
       game[player].bench.push(card);
     } else {
       return res.status(400).json({ msg: "Card is not a pokemon" });

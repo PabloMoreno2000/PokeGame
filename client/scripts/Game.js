@@ -60,7 +60,7 @@ let get_pokemon_card = (pokemon, handPos, config = {}) => {
       let benchButton = document.createElement("button");
       benchButton.className = "btn btn-primary";
       benchButton.setAttribute("data-dismiss", "modal");
-      benchButton.innerHTML = "PUT";
+      benchButton.innerHTML = "Put";
       benchButton.addEventListener("click", async (event) => {
         let resp = {};
         try {
@@ -72,7 +72,7 @@ let get_pokemon_card = (pokemon, handPos, config = {}) => {
           console.log(resp);
           alert("Pokemon moved");
         } catch (error) {
-          alert("Espera a que sea tu turno y no tengas pkm activo");
+          alert("Espera a que sea tu turno");
           console.log(error);
         }
       });
@@ -80,6 +80,34 @@ let get_pokemon_card = (pokemon, handPos, config = {}) => {
 
       // Add modal attack data when card image is clicked
       //setModalInfo(pokemonAttacks, "Choose an attack");
+    },
+    bench: () => {
+      // Ask to put pokemon as active
+      let bodyInfo = document.createElement("div");
+      bodyInfo.appendChild(
+        document.createTextNode("Click the button to put pokemon as active")
+      );
+      let benchButton = document.createElement("button");
+      benchButton.className = "btn btn-primary";
+      benchButton.setAttribute("data-dismiss", "modal");
+      benchButton.innerHTML = "Put";
+      benchButton.addEventListener("click", async (event) => {
+        let resp = {};
+        try {
+          // TODO: Put hand position
+          resp = await API.game.movePkmBenchToActive(
+            localStorage.getItem("game-id"),
+            // This would really be a bench pos in this case
+            handPos
+          );
+          console.log(resp);
+          alert("Pokemon moved");
+        } catch (error) {
+          alert("Espera a que sea tu turno y no tengas pkm activo");
+          console.log(error);
+        }
+      });
+      setModalInfo(bodyInfo, `Adding ${name} as active`, benchButton);
     },
   };
 
@@ -126,7 +154,7 @@ let get_pokemon_card = (pokemon, handPos, config = {}) => {
   return card;
 };
 
-const get_normal_card = (card, handPos) => {
+const get_normal_card = (card, handPos, config = {}) => {
   const type = card.type.name;
   const getNode = (gameCard, image, cardBody) => {
     return htmlToNode(`<div class="card" data-toggle="modal" data-target="#exampleModal" style="width: 10rem;">
@@ -201,30 +229,50 @@ const get_normal_card = (card, handPos) => {
 
 function getItemCard(item) {}
 
-let addCardToHand = (templateFunct, card, handPos) => {
+let addCardToHand = (templateFunct, card, handPos, config = {}) => {
   let mainPlayer = document.querySelector("#main-player");
   let hand = mainPlayer.querySelector("#Hand");
-  let cardItem = templateFunct(card, handPos);
+  let cardItem = templateFunct(card, handPos, (config = {}));
+  hand.appendChild(cardItem);
+};
+
+let addCardToBench = (templateFunct, card, handPos, config = {}) => {
+  let mainPlayer = document.querySelector("#main-player");
+  let hand = mainPlayer.querySelector("#Bench");
+  let cardItem = templateFunct(card, handPos, config);
   hand.appendChild(cardItem);
 };
 
 function updateFrontend(game) {
   const { player, rival } = getMatchInfo(game);
   let mainPlayer = document.querySelector("#main-player");
-  let hand = mainPlayer.querySelector("#Hand");
-  while (hand.firstChild) {
-    hand.lastChild.remove();
-  }
+  const nodesToClean = [
+    mainPlayer.querySelector("#Hand"),
+    mainPlayer.querySelector("#Bench"),
+  ];
+  nodesToClean.forEach((node) => {
+    while (node.firstChild) {
+      node.lastChild.remove();
+    }
+  });
+
   // Put info of main player
   const playerInfo = game[player];
   // Render cards in hand
   let handPos = 0;
   playerInfo.hand.forEach((card) => {
     if (card.type.name == "pokemon") {
-      addCardToHand(get_pokemon_card, card, handPos);
+      addCardToHand(get_pokemon_card, card, handPos, { mode: "hand" });
     } else {
       addCardToHand(get_normal_card, card, handPos);
     }
+    handPos++;
+  });
+
+  handPos = 0;
+  playerInfo.bench.forEach((card) => {
+    console.log(card);
+    addCardToBench(get_pokemon_card, card, handPos, { mode: "bench" });
     handPos++;
   });
 }
@@ -243,7 +291,7 @@ $(document).ready(async () => {
     const game = resp.data;
     console.log(game);
     updateFrontend(game);
-    setTimeout(refreshGame, 3000);
+    setTimeout(refreshGame, 1500);
   }
   refreshGame();
 });
