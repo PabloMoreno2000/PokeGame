@@ -27,6 +27,8 @@ router.get("/gameState/:gameId", [auth], async (req, res) => {
       return res.status(403).send("Authorization denied");
     }
 
+    const player = userId == game["player1"].id ? "player1" : "player2";
+    const rival = player == "player1" ? "player2" : "player1";
     const types = await getTypes();
     const setTypeCardInfo = (card) => {
       let cardCopy = deepCopy(card);
@@ -41,18 +43,21 @@ router.get("/gameState/:gameId", [auth], async (req, res) => {
     };
 
     // Put the type info of each game
-    gameCopy.player1.hand = gameCopy.player1.hand.map((card) => {
+    gameCopy[player].hand = gameCopy[player].hand.map((card) => {
       return setTypeCardInfo(card);
     });
-    gameCopy.player2.hand = gameCopy.player2.hand.map((card) => {
+    gameCopy[player].bench = gameCopy[player].bench.map((card) => {
       return setTypeCardInfo(card);
     });
-    gameCopy.player1.bench = gameCopy.player1.bench.map((card) => {
+    gameCopy[rival].bench = gameCopy[rival].bench.map((card) => {
       return setTypeCardInfo(card);
     });
-    gameCopy.player2.bench = gameCopy.player2.bench.map((card) => {
-      return setTypeCardInfo(card);
-    });
+
+    // Rival's hand musn't be visible, just send the count
+    gameCopy[rival].handCount = game[rival].hand.length;
+    delete gameCopy[rival].hand;
+    // Deck shouldn't be visible either
+    delete gameCopy.deck;
 
     res.send(gameCopy);
   } catch (error) {
