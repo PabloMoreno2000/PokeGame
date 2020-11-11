@@ -76,9 +76,6 @@ let get_pokemon_card = (pokemon, handPos, config = {}) => {
         }
       });
       setModalInfo(bodyInfo, `Adding ${name} to bench`, benchButton);
-
-      // Add modal attack data when card image is clicked
-      //setModalInfo(pokemonAttacks, "Choose an attack");
     },
     bench: () => {
       // Ask to put pokemon as active
@@ -118,6 +115,7 @@ let get_pokemon_card = (pokemon, handPos, config = {}) => {
       );
 
       // Render a button per attack
+      let attackPos = 0;
       let pokemonAttacks = document.createElement("div");
       pokemonAttacks.classList.add("list-group-item");
       pokemonInfo.attacks.forEach((attack) => {
@@ -125,13 +123,24 @@ let get_pokemon_card = (pokemon, handPos, config = {}) => {
         attkDiv.innerText = `${attack.name} - Damage: ${attack.damage} - Energy: ${attack.energy}`;
 
         let attackButton = document.createElement("button");
-        attackButton.classList.add("attack-btn");
+        attackButton.setAttribute("data-dismiss", "modal");
+        attackButton.style = "margin-left: 15px;";
+        attackButton.className = "btn btn-primary";
         attackButton.innerHTML = `${attack.name}`;
+        attackButton.addEventListener("click", async (event) => {
+          try {
+            await API.game.attack(attackPos, localStorage.getItem("game-id"));
+          } catch (error) {
+            alert("Check your energy and wait for your turn");
+            console.log(error);
+          }
+        });
 
         attkDiv.appendChild(attackButton);
         pokemonAttacks.appendChild(attkDiv);
       });
 
+      attackPos++;
       setModalInfo(pokemonAttacks, `Choose an attack`);
     },
   };
@@ -295,7 +304,10 @@ function updateFrontend(game) {
 
   // Render active pokemon
   // handPos is not important here
-  if (playerInfo.activePokemon) {
+  if (
+    playerInfo.activePokemon &&
+    Object.keys(playerInfo.activePokemon).length > 0
+  ) {
     addCardToActive(get_pokemon_card, playerInfo.activePokemon, -1, {
       mode: "active",
     });
