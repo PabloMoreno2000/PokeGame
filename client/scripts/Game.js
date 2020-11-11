@@ -142,6 +142,7 @@ let get_pokemon_card = (pokemon, handPos, config = {}) => {
 
       setModalInfo(pokemonAttacks, `Choose an attack`);
     },
+    rival: () => {},
   };
 
   // Default mode is to prepare a hand card. There's also bench and active
@@ -150,14 +151,18 @@ let get_pokemon_card = (pokemon, handPos, config = {}) => {
       ? config.mode
       : "hand";
 
+  // Rival cards is a reason to not make a card clickable or show a modal
+  const shouldBlockInteraction = mode == "rival";
   let card = document.createElement("div");
 
   // Image
   let image = document.createElement("img");
   image.src = photo;
   image.style = "width: 10rem";
-  image.setAttribute("data-toggle", "modal");
-  image.setAttribute("data-target", "#exampleModal");
+  if (!shouldBlockInteraction) {
+    image.setAttribute("data-toggle", "modal");
+    image.setAttribute("data-target", "#exampleModal");
+  }
   image.classList.add("card-img-top");
 
   image.addEventListener("click", (event) => modeClickHandlers[mode]());
@@ -329,6 +334,21 @@ function updateFrontend(game) {
       }
     );
   }
+
+  // Now render for rival player
+  const rivalInfo = game[rival];
+  handPos = 0;
+  rivalInfo.bench.forEach((card) => {
+    console.log(card);
+    addCardToContainer(
+      get_pokemon_card,
+      card,
+      handPos,
+      cardsContainers.rivalBench,
+      { mode: "rival" }
+    );
+    handPos++;
+  });
 }
 
 $(document).ready(async () => {
