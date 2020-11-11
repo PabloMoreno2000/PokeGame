@@ -351,6 +351,60 @@ router.put(
   }
 );
 
+// @route  PUT api/game/useEnergy
+// @desct receives a energy card position and adds an energy point to a certain pkm
+// @access Private
+router.put(
+  "/useEnergy",
+  [
+    auth,
+    [
+      check("gameId", "Please specify a game id").notEmpty(),
+      check(
+        "useInActivePkm",
+        "Please specify if it is being used in active pkm"
+      ).isBoolean(),
+    ],
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { gameId, useInActivePkm } = req.body;
+    const playerId = req.user.id;
+    let game = {};
+    let player = "";
+    const status = canPerformMove(gameId, playerId);
+    if (!status.canMove) {
+      return res.status(400).json({ msg: status.message });
+    } else {
+      game = status.game;
+      player = status.player;
+    }
+
+    // Put energy in active pkm
+    if (useInActivePkm) {
+      game[player].activePokemon.pokemonInfo.currEnergy++;
+    }
+    // Put energy in bench pkm
+    else {
+      const benchPos = req.body.benchPos;
+      if (!benchPos) {
+        return res.status(403).send("Send a benchPos");
+      }
+
+      // benchPos starts at 0
+      if (benchPos >= game[player].bench.length) {
+        return res.status(404).send("Card not found in bench");
+      }
+      game[player].bench[benchPos].pokemonInfo.currEnergy++;
+    }
+    return res.json(game);
+  }
+);
+
 // TODO: Assure at least one pokemon to be in the hand of each player
 router.post(
   "/newGame",
