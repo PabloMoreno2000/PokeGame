@@ -128,6 +128,8 @@ router.put(
     const switchTurn = () => {
       // Technically this is the start of the next turn (of the enemy player)
       game.turn = !game.turn;
+      // Allow attacking player to use energy in the next turn
+      game[player].turnEnergyUsed = false;
 
       // Until now just the item pkm has item effects, and it can't return to bench
       const enemyPkm = game[enemyPlayer].activePokemon;
@@ -361,6 +363,10 @@ router.put(
     [
       check("gameId", "Please specify a game id").notEmpty(),
       check(
+        "energyPos",
+        "Please specify the pos of the energy card"
+      ).notEmpty(),
+      check(
         "useInActivePkm",
         "Please specify if it is being used in active pkm"
       ).isBoolean(),
@@ -372,7 +378,7 @@ router.put(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { gameId, useInActivePkm } = req.body;
+    const { gameId, energyPos, useInActivePkm } = req.body;
     const playerId = req.user.id;
     let game = {};
     let player = "";
@@ -382,6 +388,16 @@ router.put(
     } else {
       game = status.game;
       player = status.player;
+    }
+
+    const types = await getTypes();
+    const card = game[player].hand[energyPos];
+    if (card.type != types.energy.id) {
+      return res.status(400).send("Specified card isn't energy type");
+    }
+
+    if (game[player].turnEnergyUsed) {
+      return res.status(400).send("Can't use more than 1 energy per turn");
     }
 
     // Put energy in active pkm
@@ -400,6 +416,11 @@ router.put(
         return res.status(404).send("Card not found in bench");
       }
       game[player].bench[benchPos].pokemonInfo.currEnergy++;
+      game[player].turnEnergyUsed = true;
+
+      // Delete card from hand
+      // The [0] stays there just as a remainder of what's return by splice
+      game[player].hand.splice(energyPos, 1)[0];
     }
     return res.json(game);
   }
@@ -447,12 +468,14 @@ router.post(
         hand: cards1,
         bench: [],
         activePokemon: {},
+        turnEnergyUsed: false,
       },
       player2: {
         id: player2,
         hand: cards2,
         bench: [],
         activePokemon: {},
+        turnEnergyUsed: false,
       },
       deck,
       turn: true,
