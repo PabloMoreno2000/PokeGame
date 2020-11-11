@@ -253,12 +253,12 @@ const get_normal_card = (card, handPos, config = {}) => {
 function getItemCard(item) {}
 
 const cardsContainers = {
-  mainHand: document.querySelector("#main-player").querySelector("#Hand"),
-  mainBench: document.querySelector("#main-player").querySelector("#Bench"),
-  mainActive: document.querySelector("#main-player").querySelector("#Active"),
-  rivalHand: document.querySelector("#rival-player").querySelector("#Hand"),
-  rivalBench: document.querySelector("#rival-player").querySelector("#Bench"),
-  rivalActive: document.querySelector("#rival-player").querySelector("#Active"),
+  mainHand: document.querySelector("#hand-main"),
+  mainBench: document.querySelector("#bench-main"),
+  mainActive: document.querySelector("#active-main"),
+  rivalHand: document.querySelector("#hand-rival"),
+  rivalBench: document.querySelector("#bench-rival"),
+  rivalActive: document.querySelector("#active-rival"),
 };
 const addCardToContainer = (
   templateFunct,
@@ -349,6 +349,20 @@ function updateFrontend(game) {
     );
     handPos++;
   });
+  if (
+    rivalInfo.activePokemon &&
+    Object.keys(rivalInfo.activePokemon).length > 0
+  ) {
+    addCardToContainer(
+      get_pokemon_card,
+      rivalInfo.activePokemon,
+      -1,
+      cardsContainers.rivalActive,
+      {
+        mode: "rival",
+      }
+    );
+  }
 }
 
 $(document).ready(async () => {
