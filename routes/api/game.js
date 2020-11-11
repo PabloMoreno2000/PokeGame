@@ -53,12 +53,6 @@ router.get("/gameState/:gameId", [auth], async (req, res) => {
     gameCopy.player2.bench = gameCopy.player2.bench.map((card) => {
       return setTypeCardInfo(card);
     });
-    gameCopy.player1.activePokemon = setTypeCardInfo(
-      gameCopy.player1.activePokemon
-    );
-    gameCopy.player2.activePokemon = setTypeCardInfo(
-      gameCopy.player2.activePokemon
-    );
 
     res.send(gameCopy);
   } catch (error) {
@@ -254,7 +248,7 @@ router.put(
     }
     if (isObjectEmpty(game[player].activePokemon)) {
       // Splice wraps the result in an array, get the first position
-      const card = game[player].bench.splice(benchPosition, 1)[0][0];
+      const card = game[player].bench.splice(benchPosition, 1)[0];
       game[player].activePokemon = card;
       game.turn = !game.turn;
     } else {

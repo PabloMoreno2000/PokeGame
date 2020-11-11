@@ -2,12 +2,11 @@ function byId(itemId) {
   return $(`#${itemId}`);
 }
 
-function getMatchInfo(game) {
+function getMatchInfo() {
   const username = localStorage.getItem("username");
   const player = localStorage.getItem("player");
   const rival = player == "player1" ? "player2" : "player1";
-  const isPlayerReady = player == "player1" ? game.ready1 : game.ready2;
-  return { username, player, rival, isPlayerReady };
+  return { username, player, rival };
 }
 
 function setModalInfo(bodyNode, titleText, footerNode = null) {
@@ -244,7 +243,7 @@ let addCardToBench = (templateFunct, card, handPos, config = {}) => {
 };
 
 function updateFrontend(game) {
-  const { player, rival } = getMatchInfo(game);
+  const { player, rival } = getMatchInfo();
   let mainPlayer = document.querySelector("#main-player");
   const nodesToClean = [
     mainPlayer.querySelector("#Hand"),
