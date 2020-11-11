@@ -126,21 +126,23 @@ router.put(
 
       // Until now just the item pkm has item effects, and it can't return to bench
       const enemyPkm = game[enemyPlayer].activePokemon;
-      const effects = enemyPkm.pokemonInfo.itemEffects;
-      const applyAction = {
-        "turn-healing": (boost, pokemon) =>
-          (pokemon.pokemonInfo.currHp = Math.min(
-            pokemon.pokemonInfo.maxHp,
-            pokemon.pokemonInfo.currHp + boost
-          )),
-      };
+      if (enemyPkm) {
+        const effects = enemyPkm.pokemonInfo.itemEffects;
+        const applyAction = {
+          "turn-healing": (boost, pokemon) =>
+            (pokemon.pokemonInfo.currHp = Math.min(
+              pokemon.pokemonInfo.maxHp,
+              pokemon.pokemonInfo.currHp + boost
+            )),
+        };
 
-      effects.map((effect) => {
-        applyAction[effect.name](effect.boost, enemyPkm);
-        if (--effect.turnsLeft == 0) {
-          delete effect;
-        }
-      });
+        effects.map((effect) => {
+          applyAction[effect.name](effect.boost, enemyPkm);
+          if (--effect.turnsLeft == 0) {
+            delete effect;
+          }
+        });
+      }
     };
     switchTurn();
     res.send(game);

@@ -115,10 +115,10 @@ let get_pokemon_card = (pokemon, handPos, config = {}) => {
       );
 
       // Render a button per attack
-      let attackPos = 0;
       let pokemonAttacks = document.createElement("div");
       pokemonAttacks.classList.add("list-group-item");
-      pokemonInfo.attacks.forEach((attack) => {
+      for (let i = 0; i < pokemonInfo.attacks.length; i++) {
+        const attack = pokemonInfo.attacks[i];
         let attkDiv = document.createElement("div");
         attkDiv.innerText = `${attack.name} - Damage: ${attack.damage} - Energy: ${attack.energy}`;
 
@@ -129,7 +129,7 @@ let get_pokemon_card = (pokemon, handPos, config = {}) => {
         attackButton.innerHTML = `${attack.name}`;
         attackButton.addEventListener("click", async (event) => {
           try {
-            await API.game.attack(attackPos, localStorage.getItem("game-id"));
+            await API.game.attack(i, localStorage.getItem("game-id"));
           } catch (error) {
             alert("Check your energy and wait for your turn");
             console.log(error);
@@ -138,9 +138,8 @@ let get_pokemon_card = (pokemon, handPos, config = {}) => {
 
         attkDiv.appendChild(attackButton);
         pokemonAttacks.appendChild(attkDiv);
-      });
+      }
 
-      attackPos++;
       setModalInfo(pokemonAttacks, `Choose an attack`);
     },
   };
