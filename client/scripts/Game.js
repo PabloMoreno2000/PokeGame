@@ -236,7 +236,7 @@ const get_normal_card = (card, handPos, config = {}) => {
       return cardNode;
     },
     energy: (card) => {
-      return getNode(card, "../images/potion.png", "");
+      return getNode(card, "../images/energy.png", "");
     },
   };
 

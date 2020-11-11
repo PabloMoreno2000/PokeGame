@@ -430,7 +430,7 @@ router.post(
     }
 
     // Create deck
-    let deck = await createDeck(deckN + playerHand * 2, 0.25, 0.25, 0.5);
+    let deck = await createDeck(deckN + playerHand * 2, 0.25, 0.5, 0.25);
 
     // Distribute cards
     let result = getNewHandFromDeck(deck, playerHand);
