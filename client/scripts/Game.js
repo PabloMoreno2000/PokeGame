@@ -236,7 +236,17 @@ const get_normal_card = (card, handPos, config = {}) => {
       return cardNode;
     },
     energy: (card) => {
-      return getNode(card, "../images/energy.png", "");
+      const cardNode = getNode(card, "../images/energy.png", "");
+      // get all pkms nodes from bench and active, put them in a div
+      const pkmDiv = document.createElement("div");
+      const activePkm = cardsContainers.mainActive.cloneNode(true);
+      const benchCards = cardsContainers.mainBench.children.forEach((child) => {
+        const copy = child.cloneNode(true);
+        // When one of this pkm card is clicked an energy point will be given to it
+        copy.addEventListener("click", async (event) => {});
+      });
+
+      return cardNode;
     },
   };
 

@@ -67,6 +67,14 @@ const API = {
         true,
         {}
       ),
+    useEnergy: (gameId, inGameIdEnergy, inGameIdPkm) =>
+      db(
+        "PUT",
+        "/api/game/useEnergy",
+        { gameId, inGameIdEnergy, inGameIdPkm },
+        true,
+        {}
+      ),
     attack: (attackPos, gameId) =>
       db("PUT", "/api/game/attack", { attackPos, gameId }, true, {}),
   },

@@ -363,13 +363,13 @@ router.put(
     [
       check("gameId", "Please specify a game id").notEmpty(),
       check(
-        "energyPos",
-        "Please specify the pos of the energy card"
+        "inGameIdEnergy",
+        "Please specify the inGame id for the energy card"
       ).notEmpty(),
       check(
-        "useInActivePkm",
-        "Please specify if it is being used in active pkm"
-      ).isBoolean(),
+        "inGameIdPkm",
+        "Please specify the inGame id for the pkm"
+      ).notEmpty(),
     ],
   ],
   async (req, res) => {
@@ -378,7 +378,7 @@ router.put(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { gameId, energyPos, useInActivePkm } = req.body;
+    const { gameId, inGameIdEnergy, inGameIdPkm } = req.body;
     const playerId = req.user.id;
     let game = {};
     let player = "";
@@ -390,38 +390,28 @@ router.put(
       player = status.player;
     }
 
-    const types = await getTypes();
-    const card = game[player].hand[energyPos];
-    if (card.type != types.energy.id) {
-      return res.status(400).send("Specified card isn't energy type");
+    let response = grabCardForPlayer(gameId, inGameIdEnergy, playerId);
+    // If card's not found in hand
+    if (!response.card || response.foundIn != "hand") {
+      return res.status(404).send("Energy card not found");
     }
 
-    if (game[player].turnEnergyUsed) {
-      return res.status(400).send("Can't use more than 1 energy per turn");
+    // If pkm card's not found in bench or active
+    response = grabCardForPlayer(gameId, inGameIdPkm, playerId);
+    if (
+      !response.card ||
+      (response.foundIn != "bench" && response.foundIn != "active")
+    ) {
+      return res.status(404).send("Pkm not found in bench or active");
     }
 
-    // Put energy in active pkm
-    if (useInActivePkm) {
-      game[player].activePokemon.pokemonInfo.currEnergy++;
-    }
-    // Put energy in bench pkm
-    else {
-      const benchPos = req.body.benchPos;
-      if (!benchPos) {
-        return res.status(403).send("Send a benchPos");
-      }
+    // Increase pkm energy
+    response.card.pokemonInfo.currEnergy++;
+    game[player].turnEnergyUsed = true;
 
-      // benchPos starts at 0
-      if (benchPos >= game[player].bench.length) {
-        return res.status(404).send("Card not found in bench");
-      }
-      game[player].bench[benchPos].pokemonInfo.currEnergy++;
-      game[player].turnEnergyUsed = true;
+    // Delete energy card from hand
+    deleteCardInContainer(gameId, inGameIdEnergy, "hand", playerId);
 
-      // Delete card from hand
-      // The [0] stays there just as a remainder of what's return by splice
-      game[player].hand.splice(energyPos, 1)[0];
-    }
     return res.json(game);
   }
 );
@@ -561,10 +551,82 @@ async function createDeck(cardsNo, items, pokemons, energies) {
   itemCards = getRandom(itemCards, itemN);
   energyCards = getRandom(energyCards, energyN);
 
-  // TODO: Shuffle result
-  return pokemonCards
-    .concat(itemCards, energyCards)
-    .sort(() => 0.5 - Math.random());
+  const deck = pokemonCards.concat(itemCards, energyCards);
+  // Give an id to each card in game
+  let nextId = 0;
+  deck.forEach((card) => {
+    card.inGameId = nextId;
+    nextId++;
+  });
+  // return shuffled deck
+  return deck.sort(() => 0.5 - Math.random());
+}
+
+function deleteCardInContainer(gameId, cardInGameId, containerName, playerId) {
+  const game = game[gameId];
+  if (!game || (playerId != game.player1.id && playerId != game.player2.id)) {
+    return;
+  }
+  const player = playerId == game.player1.id ? "player1" : "player2";
+
+  let container = null;
+  if (containerName == "hand") {
+    container = game[player].hand;
+  } else if (containerName == "bench") {
+    container = game[player].bench;
+  } else if (containerName == "deck") {
+    container = game.deck;
+  }
+
+  if (container) {
+    container = container.filter((card) => {
+      card.inGameId != cardInGameId;
+    });
+  }
+}
+
+// In another version this should replace every "handPos" and "benchPos" parameter in routes
+function grabCardForPlayer(gameId, cardInGameId, playerId) {
+  let foundIn = null;
+  let searchedCard = null;
+  const game = game[gameId];
+  if (!game || (playerId != game.player1.id && playerId != game.player2.id)) {
+    return null;
+  }
+  const player = playerId == game.player1.id ? "player1" : "player2";
+  // Search in hand, bench and active
+  game[player].hand.forEach((card) => {
+    if (card.inGameId == cardInGameId) {
+      searchedCard = card;
+      foundIn = "hand";
+      return;
+    }
+  });
+  if (!searchedCard) {
+    game[player].bench.forEach((card) => {
+      if (card.inGameId == cardInGameId) {
+        searchedCard = card;
+        foundIn = "bench";
+        return;
+      }
+    });
+  }
+  if (!searchedCard) {
+    if (game[player].activePokemon.inGameId == cardInGameId) {
+      searchedCard = game[player].activePokemon;
+      foundIn = "active";
+    }
+  }
+  if (!searchedCard) {
+    game.deck.forEach((card) => {
+      if (card.inGameId == cardInGameId) {
+        searchedCard = card;
+        foundIn = "deck";
+        return;
+      }
+    });
+  }
+  return { card: searchedCard, foundIn };
 }
 
 async function getTypes() {
