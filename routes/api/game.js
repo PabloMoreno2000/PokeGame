@@ -131,7 +131,7 @@ router.put(
 
       // Until now just the item pkm has item effects, and it can't return to bench
       const enemyPkm = game[enemyPlayer].activePokemon;
-      if (enemyPkm) {
+      if (enemyPkm && enemyPkm.pokemonInfo) {
         const effects = enemyPkm.pokemonInfo.itemEffects;
         const applyAction = {
           "turn-healing": (boost, pokemon) =>
@@ -344,6 +344,9 @@ router.put(
       card,
       game[player].activePokemon
     );
+    // Remove item card
+    game[player].hand.splice(handItemPos, 1)[0];
+
     res.send(game);
   }
 );
