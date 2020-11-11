@@ -247,34 +247,29 @@ const get_normal_card = (card, handPos, config = {}) => {
 
 function getItemCard(item) {}
 
-let addCardToHand = (templateFunct, card, handPos, config = {}) => {
-  let mainPlayer = document.querySelector("#main-player");
-  let hand = mainPlayer.querySelector("#Hand");
-  let cardItem = templateFunct(card, handPos, (config = {}));
-  hand.appendChild(cardItem);
+const cardsContainers = {
+  mainHand: document.querySelector("#main-player").querySelector("#Hand"),
+  mainBench: document.querySelector("#main-player").querySelector("#Bench"),
+  mainActive: document.querySelector("#main-player").querySelector("#Active"),
+  rivalHand: document.querySelector("#rival-player").querySelector("#Hand"),
+  rivalBench: document.querySelector("#rival-player").querySelector("#Bench"),
+  rivalActive: document.querySelector("#rival-player").querySelector("#Active"),
 };
-let addCardToBench = (templateFunct, card, handPos, config = {}) => {
-  let mainPlayer = document.querySelector("#main-player");
-  let hand = mainPlayer.querySelector("#Bench");
+const addCardToContainer = (
+  templateFunct,
+  card,
+  handPos,
+  cardsContainer,
+  config = {}
+) => {
   let cardItem = templateFunct(card, handPos, config);
-  hand.appendChild(cardItem);
-};
-let addCardToActive = (templateFunct, card, handPos, config = {}) => {
-  let mainPlayer = document.querySelector("#main-player");
-  let hand = mainPlayer.querySelector("#Active");
-  let cardItem = templateFunct(card, handPos, config);
-  hand.appendChild(cardItem);
+  cardsContainer.appendChild(cardItem);
 };
 
 function updateFrontend(game) {
   const { player, rival } = getMatchInfo();
-  let mainPlayer = document.querySelector("#main-player");
-  const nodesToClean = [
-    mainPlayer.querySelector("#Hand"),
-    mainPlayer.querySelector("#Bench"),
-    mainPlayer.querySelector("#Active"),
-  ];
-  nodesToClean.forEach((node) => {
+  // Clean all containers
+  Object.values(cardsContainers).forEach((node) => {
     while (node.firstChild) {
       node.lastChild.remove();
     }
@@ -286,18 +281,35 @@ function updateFrontend(game) {
   let handPos = 0;
   playerInfo.hand.forEach((card) => {
     if (card.type.name == "pokemon") {
-      addCardToHand(get_pokemon_card, card, handPos, { mode: "hand" });
+      addCardToContainer(
+        get_pokemon_card,
+        card,
+        handPos,
+        cardsContainers.mainHand,
+        { mode: "hand" }
+      );
     } else {
-      addCardToHand(get_normal_card, card, handPos);
+      addCardToContainer(
+        get_normal_card,
+        card,
+        handPos,
+        cardsContainers.mainHand
+      );
     }
     handPos++;
   });
 
-  // Render hand in bench
+  // Render cards in bench
   handPos = 0;
   playerInfo.bench.forEach((card) => {
     console.log(card);
-    addCardToBench(get_pokemon_card, card, handPos, { mode: "bench" });
+    addCardToContainer(
+      get_pokemon_card,
+      card,
+      handPos,
+      cardsContainers.mainBench,
+      { mode: "bench" }
+    );
     handPos++;
   });
 
@@ -307,9 +319,15 @@ function updateFrontend(game) {
     playerInfo.activePokemon &&
     Object.keys(playerInfo.activePokemon).length > 0
   ) {
-    addCardToActive(get_pokemon_card, playerInfo.activePokemon, -1, {
-      mode: "active",
-    });
+    addCardToContainer(
+      get_pokemon_card,
+      playerInfo.activePokemon,
+      -1,
+      cardsContainers.mainActive,
+      {
+        mode: "active",
+      }
+    );
   }
 }
 
