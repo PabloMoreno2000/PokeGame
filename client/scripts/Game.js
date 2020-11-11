@@ -108,6 +108,32 @@ let get_pokemon_card = (pokemon, handPos, config = {}) => {
       });
       setModalInfo(bodyInfo, `Adding ${name} as active`, benchButton);
     },
+    active: () => {
+      // Ask to put pokemon as active
+      let bodyInfo = document.createElement("div");
+      bodyInfo.appendChild(
+        document.createTextNode(
+          "Click an attack to use it agains the enemy player"
+        )
+      );
+
+      // Render a button per attack
+      let pokemonAttacks = document.createElement("div");
+      pokemonAttacks.classList.add("list-group-item");
+      pokemonInfo.attacks.forEach((attack) => {
+        let attkDiv = document.createElement("div");
+        attkDiv.innerText = `${attack.name} - Damage: ${attack.damage} - Energy: ${attack.energy}`;
+
+        let attackButton = document.createElement("button");
+        attackButton.classList.add("attack-btn");
+        attackButton.innerHTML = `${attack.name}`;
+
+        attkDiv.appendChild(attackButton);
+        pokemonAttacks.appendChild(attkDiv);
+      });
+
+      setModalInfo(pokemonAttacks, `Choose an attack`);
+    },
   };
 
   // Default mode is to prepare a hand card. There's also bench and active
@@ -125,21 +151,6 @@ let get_pokemon_card = (pokemon, handPos, config = {}) => {
   image.setAttribute("data-toggle", "modal");
   image.setAttribute("data-target", "#exampleModal");
   image.classList.add("card-img-top");
-
-  // Attacks
-  let pokemonAttacks = document.createElement("div");
-  pokemonAttacks.classList.add("list-group-item");
-  pokemonInfo.attacks.forEach((attack) => {
-    let attkDiv = document.createElement("div");
-    attkDiv.innerText = `${attack.name} - Damage: ${attack.damage} - Energy: ${attack.energy}`;
-
-    let attackButton = document.createElement("button");
-    attackButton.classList.add("attack-btn");
-    attackButton.innerHTML = `${attack.name}`;
-
-    attkDiv.appendChild(attackButton);
-    pokemonAttacks.appendChild(attkDiv);
-  });
 
   image.addEventListener("click", (event) => modeClickHandlers[mode]());
 
@@ -234,10 +245,15 @@ let addCardToHand = (templateFunct, card, handPos, config = {}) => {
   let cardItem = templateFunct(card, handPos, (config = {}));
   hand.appendChild(cardItem);
 };
-
 let addCardToBench = (templateFunct, card, handPos, config = {}) => {
   let mainPlayer = document.querySelector("#main-player");
   let hand = mainPlayer.querySelector("#Bench");
+  let cardItem = templateFunct(card, handPos, config);
+  hand.appendChild(cardItem);
+};
+let addCardToActive = (templateFunct, card, handPos, config = {}) => {
+  let mainPlayer = document.querySelector("#main-player");
+  let hand = mainPlayer.querySelector("#Active");
   let cardItem = templateFunct(card, handPos, config);
   hand.appendChild(cardItem);
 };
@@ -248,6 +264,7 @@ function updateFrontend(game) {
   const nodesToClean = [
     mainPlayer.querySelector("#Hand"),
     mainPlayer.querySelector("#Bench"),
+    mainPlayer.querySelector("#Active"),
   ];
   nodesToClean.forEach((node) => {
     while (node.firstChild) {
@@ -268,12 +285,21 @@ function updateFrontend(game) {
     handPos++;
   });
 
+  // Render hand in bench
   handPos = 0;
   playerInfo.bench.forEach((card) => {
     console.log(card);
     addCardToBench(get_pokemon_card, card, handPos, { mode: "bench" });
     handPos++;
   });
+
+  // Render active pokemon
+  // handPos is not important here
+  if (playerInfo.activePokemon) {
+    addCardToActive(get_pokemon_card, playerInfo.activePokemon, -1, {
+      mode: "active",
+    });
+  }
 }
 
 $(document).ready(async () => {
