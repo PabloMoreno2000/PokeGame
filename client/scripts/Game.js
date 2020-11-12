@@ -262,7 +262,7 @@ const get_normal_card = (card, handPos, config = {}) => {
                 pkmInGameId
               );
             } catch (error) {
-              alert("Can use just energy in your turn");
+              alert("Can use just one energy in your turn");
             }
           });
         });
@@ -420,7 +420,7 @@ $(document).ready(async () => {
       try {
         await API.game.endTurn(gameId);
       } catch (error) {
-        alert("Please wait for your turn");
+        alert("Please wait for your turn after having an active pkm");
       }
     });
 

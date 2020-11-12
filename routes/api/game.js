@@ -87,6 +87,11 @@ router.put(
       game = status.game;
       player = status.player;
     }
+
+    if (isObjectEmpty(game[player].activePokemon)) {
+      return res.status(400).json("Can't pass turn withouth an active pkm");
+    }
+
     switchTurn(game, player);
     res.json(game);
   }
@@ -252,6 +257,7 @@ router.put(
       game = status.game;
       player = status.player;
     }
+    const rival = player == "player1" ? "player2" : "player1";
 
     if (game[player].bench.length == 0) {
       return res.status(400).json({ msg: "There are no pokemons in bench" });
@@ -265,7 +271,14 @@ router.put(
       // Splice wraps the result in an array, get the first position
       const card = game[player].bench.splice(benchPosition, 1)[0];
       game[player].activePokemon = card;
-      game.turn = !game.turn;
+
+      // Change turn if this player was putting an active pkm and the other doesn't has
+      // That means neither had active, so the match was starting
+      if (isObjectEmpty(game[rival].activePokemon)) {
+        game.turn = !game.turn;
+        // Allow the player to use energy in the next turn
+        game[player].turnEnergyUsed = false;
+      }
     } else {
       return res.status(400).json({ msg: "There's already an active pokemon" });
     }
@@ -451,7 +464,7 @@ router.post(
     }
 
     // Create deck
-    let deck = await createDeck(deckN + playerHand * 2, 0.25, 0.4, 0.35);
+    let deck = await createDeck(deckN + playerHand * 2, 0.25, 0.25, 0.5);
 
     // Distribute cards
     let result = getNewHandFromDeck(deck, playerHand);
@@ -496,8 +509,21 @@ function isObjectEmpty(object) {
 // Returns an object of the form { hand, resultingDeck }.
 function getNewHandFromDeck(deck, handSize) {
   // Get a part of the deck
-  const shuffled = deck.sort(() => 0.5 - Math.random());
-  return { hand: shuffled.slice(0, handSize), deck: shuffled.slice(handSize) };
+  let shuffled = deck.sort(() => 0.5 - Math.random());
+  // At least one card must be a pkm
+  const pokemonCard = shuffled.filter((card) => {
+    return card.type == types.pokemon.id;
+  })[0];
+  // Delete the drawn pkm card from shuffled deck
+  shuffled = shuffled.filter((card) => {
+    return card.inGameId != pokemonCard.inGameId;
+  });
+  const hand = shuffled.slice(0, handSize - 1);
+  hand.push(pokemonCard);
+  return {
+    hand,
+    deck: shuffled.slice(handSize - 1),
+  };
 }
 
 // Get n random elements from an array
@@ -684,8 +710,13 @@ const switchTurn = (game, player) => {
   game.turn = !game.turn;
   // Allow attacking player to use energy in the next turn
   game[player].turnEnergyUsed = false;
+  // Give the top card from the deck to the enemyPlayer for his/her turn start
+  if (game.deck.length > 0) {
+    const card = game.deck.splice(0, 1)[0];
+    game[enemyPlayer].hand.push(card);
+  }
 
-  // Until now just the item pkm has item effects, and it can't return to bench
+  // Apply item effects to the active pokemon
   const enemyPkm = game[enemyPlayer].activePokemon;
   if (enemyPkm && enemyPkm.pokemonInfo) {
     const effects = enemyPkm.pokemonInfo.itemEffects;
