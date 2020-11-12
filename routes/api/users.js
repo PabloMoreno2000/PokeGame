@@ -34,8 +34,8 @@ router.post(
     const { name, email, password } = req.body;
 
     try {
-      // Check if there's a user with that email (since we put emails as unique)
-      let user = await User.findOne({ email });
+      // Check if there's a user with that name (since we put name as unique)
+      let user = await User.findOne({ name });
       if (user) {
         return res
           .status(400)

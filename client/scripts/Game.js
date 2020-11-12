@@ -431,6 +431,8 @@ $(document).ready(async () => {
       resp = await API.game.getGameState(gameId);
     } catch (error) {
       console.log(error);
+      // To mitigate an unexpected fail in getState
+      resp.data = { hasWon: "" };
     }
     const game = resp.data;
     console.log(game);
