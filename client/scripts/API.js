@@ -75,6 +75,7 @@ const API = {
         true,
         {}
       ),
+    endTurn: (gameId) => db("PUT", "/api/game/endTurn", { gameId }, true, {}),
     attack: (attackPos, gameId) =>
       db("PUT", "/api/game/attack", { attackPos, gameId }, true, {}),
   },

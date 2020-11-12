@@ -66,6 +66,32 @@ router.get("/gameState/:gameId", [auth], async (req, res) => {
   }
 });
 
+// @route  PUT api/game/endTurn
+// @desct  Authenticated player can his/her turn
+// @access Private
+router.put(
+  "/endTurn",
+  [auth, check("gameId", "Please specify a game id").notEmpty()],
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    let game = {};
+    let player = "";
+    const status = canPerformMove(req.body.gameId, req.user.id);
+    if (!status.canMove) {
+      return res.status(400).json({ msg: status.message });
+    } else {
+      game = status.game;
+      player = status.player;
+    }
+    switchTurn(game, player);
+    res.json(game);
+  }
+);
+
 // @route  PUT api/game/attack
 // @desct  Authenticated player's active pokemon attacks enemy player's active pokemon
 // @access Private
@@ -103,7 +129,13 @@ router.put(
       return res.status(400).json({ msg: "Invalid attack position" });
     }
 
-    // TODO: Validate there's enough ENERGY with the pokemon
+    // Validate there's enough ENERGY with the pokemon
+    if (
+      currPokemon.pokemonInfo.currEnergy <
+      currPokemon.pokemonInfo.attacks[attackPos].energy
+    ) {
+      return res.status(400).send("Not enought energy for this attack");
+    }
 
     // Subtract health from enemy active pokemon
     const enemyPlayer = player == "player1" ? "player2" : "player1";
@@ -125,33 +157,7 @@ router.put(
       }
     }
     // Change turn after attack
-    const switchTurn = () => {
-      // Technically this is the start of the next turn (of the enemy player)
-      game.turn = !game.turn;
-      // Allow attacking player to use energy in the next turn
-      game[player].turnEnergyUsed = false;
-
-      // Until now just the item pkm has item effects, and it can't return to bench
-      const enemyPkm = game[enemyPlayer].activePokemon;
-      if (enemyPkm && enemyPkm.pokemonInfo) {
-        const effects = enemyPkm.pokemonInfo.itemEffects;
-        const applyAction = {
-          "turn-healing": (boost, pokemon) =>
-            (pokemon.pokemonInfo.currHp = Math.min(
-              pokemon.pokemonInfo.maxHp,
-              pokemon.pokemonInfo.currHp + boost
-            )),
-        };
-
-        effects.map((effect) => {
-          applyAction[effect.name](effect.boost, enemyPkm);
-          if (--effect.turnsLeft == 0) {
-            delete effect;
-          }
-        });
-      }
-    };
-    switchTurn();
+    switchTurn(game, player);
     res.send(game);
   }
 );
@@ -445,7 +451,7 @@ router.post(
     }
 
     // Create deck
-    let deck = await createDeck(deckN + playerHand * 2, 0.25, 0.5, 0.25);
+    let deck = await createDeck(deckN + playerHand * 2, 0.25, 0.4, 0.35);
 
     // Distribute cards
     let result = getNewHandFromDeck(deck, playerHand);
@@ -671,6 +677,34 @@ function canPerformMove(gameId, playerId) {
 
   return result;
 }
+
+const switchTurn = (game, player) => {
+  const enemyPlayer = player == "player1" ? "player2" : "player1";
+  // Technically this is the start of the next turn (of the enemy player)
+  game.turn = !game.turn;
+  // Allow attacking player to use energy in the next turn
+  game[player].turnEnergyUsed = false;
+
+  // Until now just the item pkm has item effects, and it can't return to bench
+  const enemyPkm = game[enemyPlayer].activePokemon;
+  if (enemyPkm && enemyPkm.pokemonInfo) {
+    const effects = enemyPkm.pokemonInfo.itemEffects;
+    const applyAction = {
+      "turn-healing": (boost, pokemon) =>
+        (pokemon.pokemonInfo.currHp = Math.min(
+          pokemon.pokemonInfo.maxHp,
+          pokemon.pokemonInfo.currHp + boost
+        )),
+    };
+
+    effects.map((effect) => {
+      applyAction[effect.name](effect.boost, enemyPkm);
+      if (--effect.turnsLeft == 0) {
+        delete effect;
+      }
+    });
+  }
+};
 
 function deepCopy(object) {
   return JSON.parse(JSON.stringify(object));

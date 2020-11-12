@@ -398,10 +398,31 @@ function updateFrontend(game) {
       }
     );
   }
+
+  // Hide/show the pass turn button
+  const button = document.getElementById("pass-turn");
+  if (
+    (game.turn && player == "player1") ||
+    (!game.turn && player == "player2")
+  ) {
+    button.style.display = "block";
+  } else {
+    button.style.display = "none";
+  }
 }
 
 $(document).ready(async () => {
   const gameId = localStorage.getItem("game-id");
+
+  document
+    .getElementById("pass-turn")
+    .addEventListener("click", async (event) => {
+      try {
+        await API.game.endTurn(gameId);
+      } catch (error) {
+        alert("Please wait for your turn");
+      }
+    });
 
   // Refresh lobby until both players are ready
   async function refreshGame() {
