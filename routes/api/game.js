@@ -6,6 +6,7 @@ const Card = require("../../models/Card");
 const CardType = require("../../models/CardType");
 const User = require("../../models/User");
 const auth = require("../../middleware/auth");
+const winAfterDefeating = 5;
 let nextGameId = 0;
 let games = [];
 let types = undefined;
@@ -154,9 +155,14 @@ router.put(
     if (game[enemyPlayer].activePokemon.pokemonInfo.currHp == 0) {
       // Remove enemy pokemon
       game[enemyPlayer].activePokemon = {};
+      // Increase counter of defeated pokemons
+      game[player].defeatedPkms++;
 
-      // If there are no pokemons in bench
-      if (game[enemyPlayer].bench.length == 0) {
+      // If there are no pokemons in bench or the player has reached the required number to mean
+      if (
+        game[enemyPlayer].bench.length == 0 ||
+        game[player].defeatedPkms >= winAfterDefeating
+      ) {
         game.hasWon = player;
         return res.send(game);
       }
@@ -482,6 +488,7 @@ router.post(
         bench: [],
         activePokemon: {},
         turnEnergyUsed: false,
+        defeatedPkms: 0,
       },
       player2: {
         id: player2,
@@ -489,6 +496,7 @@ router.post(
         bench: [],
         activePokemon: {},
         turnEnergyUsed: false,
+        defeatedPkms: 0,
       },
       deck,
       turn: true,
