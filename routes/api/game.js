@@ -390,6 +390,10 @@ router.put(
       player = status.player;
     }
 
+    if (game[player].turnEnergyUsed) {
+      return res.status(400).send("Already used energy in turn");
+    }
+
     let response = grabCardForPlayer(gameId, inGameIdEnergy, playerId);
     // If card's not found in hand
     if (!response.card || response.foundIn != "hand") {
@@ -563,24 +567,23 @@ async function createDeck(cardsNo, items, pokemons, energies) {
 }
 
 function deleteCardInContainer(gameId, cardInGameId, containerName, playerId) {
-  const game = game[gameId];
+  const game = games[gameId];
   if (!game || (playerId != game.player1.id && playerId != game.player2.id)) {
     return;
   }
   const player = playerId == game.player1.id ? "player1" : "player2";
 
-  let container = null;
   if (containerName == "hand") {
-    container = game[player].hand;
+    game[player].hand = game[player].hand.filter((card) => {
+      return String(card.inGameId) != cardInGameId;
+    });
   } else if (containerName == "bench") {
-    container = game[player].bench;
+    game[player].bench = game[player].bench.filter((card) => {
+      return String(card.inGameId) != cardInGameId;
+    });
   } else if (containerName == "deck") {
-    container = game.deck;
-  }
-
-  if (container) {
-    container = container.filter((card) => {
-      card.inGameId != cardInGameId;
+    game.deck = game.deck.filter((card) => {
+      return String(card.inGameId) != cardInGameId;
     });
   }
 }
@@ -589,7 +592,7 @@ function deleteCardInContainer(gameId, cardInGameId, containerName, playerId) {
 function grabCardForPlayer(gameId, cardInGameId, playerId) {
   let foundIn = null;
   let searchedCard = null;
-  const game = game[gameId];
+  const game = games[gameId];
   if (!game || (playerId != game.player1.id && playerId != game.player2.id)) {
     return null;
   }

@@ -240,6 +240,7 @@ const get_normal_card = (card, handPos, config = {}) => {
       const cardNode = getNode(card, "../images/energy.png", "");
       // get all pkms nodes from bench and active, put them in a div
       cardNode.addEventListener("click", (event) => {
+        const energyInGameId = event.target.parentNode.getAttribute("ingameid");
         const pkmDiv = document.createElement("div");
         const activPkm = cardsContainers.mainActive.firstChild;
         if (activPkm) {
@@ -253,8 +254,16 @@ const get_normal_card = (card, handPos, config = {}) => {
         Array.from(pkmDiv.children).forEach((child) => {
           // When one of this pkm card is clicked an energy point will be given to it
           child.addEventListener("click", async (event) => {
-            const inGameId = child.getAttribute("ingameid");
-            console.log(`ingameid: ${inGameId}`);
+            const pkmInGameId = child.getAttribute("ingameid");
+            try {
+              await API.game.useEnergy(
+                localStorage.getItem("game-id"),
+                energyInGameId,
+                pkmInGameId
+              );
+            } catch (error) {
+              alert("Can use just energy in your turn");
+            }
           });
         });
 
@@ -270,6 +279,7 @@ const get_normal_card = (card, handPos, config = {}) => {
   }
 
   const cardNode = nodeByType[type](card);
+  cardNode.setAttribute("ingameid", card.inGameId);
   return cardNode;
 };
 
