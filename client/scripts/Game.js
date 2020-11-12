@@ -47,7 +47,7 @@ function htmlToNode(htmlText) {
   */
 //name, weight, experience, height, types, img
 let get_pokemon_card = (pokemon, handPos, config = {}) => {
-  const { name, photo, pokemonInfo } = pokemon;
+  const { name, photo, pokemonInfo, inGameId } = pokemon;
   const { currEnergy, currHp, maxHp } = pokemonInfo;
   const modeClickHandlers = {
     hand: () => {
@@ -174,6 +174,7 @@ let get_pokemon_card = (pokemon, handPos, config = {}) => {
 
   card.appendChild(pokemonText);
   card.appendChild(image);
+  card.setAttribute("inGameId", inGameId);
   return card;
 };
 
@@ -238,12 +239,26 @@ const get_normal_card = (card, handPos, config = {}) => {
     energy: (card) => {
       const cardNode = getNode(card, "../images/energy.png", "");
       // get all pkms nodes from bench and active, put them in a div
-      const pkmDiv = document.createElement("div");
-      const activePkm = cardsContainers.mainActive.cloneNode(true);
-      const benchCards = cardsContainers.mainBench.children.forEach((child) => {
-        const copy = child.cloneNode(true);
-        // When one of this pkm card is clicked an energy point will be given to it
-        copy.addEventListener("click", async (event) => {});
+      cardNode.addEventListener("click", (event) => {
+        const pkmDiv = document.createElement("div");
+        const activPkm = cardsContainers.mainActive.firstChild;
+        if (activPkm) {
+          pkmDiv.appendChild(activPkm.cloneNode(true));
+        }
+        Array.from(cardsContainers.mainBench.children).forEach((child) => {
+          const copy = child.cloneNode(true);
+          pkmDiv.appendChild(copy);
+        });
+        // Add a listener per child
+        Array.from(pkmDiv.children).forEach((child) => {
+          // When one of this pkm card is clicked an energy point will be given to it
+          child.addEventListener("click", async (event) => {
+            const inGameId = child.getAttribute("ingameid");
+            console.log(`ingameid: ${inGameId}`);
+          });
+        });
+
+        setModalInfo(pkmDiv, "Select a pokemon to use energy in");
       });
 
       return cardNode;
