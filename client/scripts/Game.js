@@ -434,8 +434,18 @@ $(document).ready(async () => {
     }
     const game = resp.data;
     console.log(game);
-    updateFrontend(game);
-    setTimeout(refreshGame, 1500);
+
+    if (game.hasWon == "") {
+      updateFrontend(game);
+      setTimeout(refreshGame, 1500);
+    }
+    // If someone won go to the winner screen
+    else {
+      // game.hasWon is either "player1" or "player2",
+      // and the username of each player is on local storage
+      localStorage.setItem("winner", localStorage.getItem(game.hasWon));
+      window.location.replace("../Winner.html");
+    }
   }
   refreshGame();
 });

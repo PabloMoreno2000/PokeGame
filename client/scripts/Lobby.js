@@ -67,6 +67,8 @@ $(document).ready(async () => {
           await API.lobby.setCreatedGame(lobby.roomId, game.gameId);
           // Go to game screen
           localStorage.setItem("game-id", game.gameId);
+          localStorage.setItem("player1", lobby.player1.name);
+          localStorage.setItem("player2", lobby.player2.name);
           window.location.replace("../Game.html");
         } catch (error) {
           console.log(error);
@@ -77,6 +79,8 @@ $(document).ready(async () => {
         if (lobby.createdGameId) {
           // Get game id and change screen
           localStorage.setItem("game-id", lobby.createdGameId);
+          localStorage.setItem("player1", lobby.player1.name);
+          localStorage.setItem("player2", lobby.player2.name);
           window.location.replace("../Game.html");
         } else {
           // If both are ready but no gameId, setCreatedGame for player1 is still going
