@@ -1,0 +1,55 @@
+body,
+html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: #FFE066;
+}
+.titleUwU {
+    font-size: 250%;
+    font-family: 'Permanent Marker', cursive;
+    color: white;
+}
+
+.pikaTrophy {
+    width: 50vw;
+    max-height: 100vh;
+}
+
+.orange-btn {
+    color: white;
+    background-color:#FF8200;
+    border-color:#c26503;
+}
+.orange-btn:focus {
+    background-color:#e97902;
+    border-color: #cf6b00;
+    box-shadow:0 0 0 .2rem rgba(196, 135, 56, 0.5)
+}
+.orange-btn.disabled,.btn-primary:disabled{
+    background-color:#FF8200;border-color:#FF8200
+}
+.orange-btn:not(:disabled):not(.disabled).active,.orange-btn:not(:disabled):not(.disabled):active,.show>.orange-btn.dropdown-toggle{
+    background-color:#cf6b00;border-color:#81530f;
+    color: white;
+}
+.orange-btn:hover {
+    background-color:#e97902;
+    border-color: #cf6b00;
+    color: white;
+}
+
+.input-group-text {
+    background: #FF8200 !important;
+    color: white !important;
+    border: 0 !important;
+    border-radius: 0.25rem 0 0 0.25rem !important;
+}
+.input_user,
+.input_pass:focus {
+    box-shadow: none !important;
+    outline: 0px !important;
+}
+.custom-checkbox .custom-control-input:checked~.custom-control-label::before {
+    background-color:#FF8200 !important;
+}
