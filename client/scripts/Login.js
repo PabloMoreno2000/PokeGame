@@ -19,7 +19,7 @@ $(document).ready(async () => {
       const token = res.data.token;
       localStorage.setItem("x-auth-token", token);
       localStorage.setItem("username", username);
-      window.location.replace("../Home.html");
+      window.location.replace("../client/Home.html");
     } catch (error) {
       console.log(error);
       return;

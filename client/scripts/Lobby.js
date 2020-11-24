@@ -69,7 +69,7 @@ $(document).ready(async () => {
           localStorage.setItem("game-id", game.gameId);
           localStorage.setItem("player1", lobby.player1.name);
           localStorage.setItem("player2", lobby.player2.name);
-          window.location.replace("../Game.html");
+          window.location.replace("../client/Game.html");
         } catch (error) {
           console.log(error);
         }
@@ -81,7 +81,7 @@ $(document).ready(async () => {
           localStorage.setItem("game-id", lobby.createdGameId);
           localStorage.setItem("player1", lobby.player1.name);
           localStorage.setItem("player2", lobby.player2.name);
-          window.location.replace("../Game.html");
+          window.location.replace("../client/Game.html");
         } else {
           // If both are ready but no gameId, setCreatedGame for player1 is still going
           setTimeout(refreshGame, 300);

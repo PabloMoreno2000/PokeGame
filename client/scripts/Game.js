@@ -446,7 +446,7 @@ $(document).ready(async () => {
       // game.hasWon is either "player1" or "player2",
       // and the username of each player is on local storage
       localStorage.setItem("winner", localStorage.getItem(game.hasWon));
-      window.location.replace("../Winner.html");
+      window.location.replace("../client/Winner.html");
     }
   }
   refreshGame();

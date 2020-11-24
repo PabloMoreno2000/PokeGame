@@ -1,5 +1,11 @@
+let port = null;
+axios.get("../../config/port.json").then((resp) => {
+  port = resp.data.port;
+});
+
 function db(requestType, url, data, requiresAuth, headers) {
-  url = "http://localhost:5070" + url;
+  // 5070 will be default
+  url = `http://localhost:${port || 5070}` + url;
   let request = null;
   if (requiresAuth) {
     headers["x-auth-token"] = localStorage.getItem("x-auth-token");
