@@ -14,7 +14,7 @@ $(document).ready(async () => {
     localStorage.setItem("lobby-id", lobbyId);
     console.log(resp);
     // Go to lobby window
-    window.location.replace("../client/Lobby.html");
+    window.location.replace("../Lobby.html");
   }
 
   byId(createGame).click(async () => {

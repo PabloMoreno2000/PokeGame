@@ -33,7 +33,7 @@ $(document).ready(async () => {
       const token = res.data.token;
       localStorage.setItem("x-auth-token", token);
       localStorage.setItem("username", username);
-      window.location.replace("../client/Home.html");
+      window.location.replace("../Home.html");
     } catch (error) {
       alert("Username/email already taken or invalid email");
       console.log(error);
