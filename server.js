@@ -2,13 +2,11 @@ const express = require("express");
 const path = require("path");
 const connectDB = require("./config/db");
 const savePort = require("./config/savePort");
-const saveSecrets = require("./config/saveSecrets");
 const app = express();
 const cors = require("cors");
 const PORT = process.env.PORT || 5070;
 
 savePort(PORT);
-saveSecrets();
 app.use(cors());
 // Connect to the database
 connectDB();

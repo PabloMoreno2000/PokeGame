@@ -64,7 +64,7 @@ router.post(
       // Generate a JSON Web Token (encrypted payload with signature)
       jwt.sign(
         payload,
-        config.get("jwtSecret"), // encryption key
+        process.env.jwtSecret || config.get("jwtSecret"), // encryption key
         { expiresIn: 360000 },
         // Callback
         (err, token) => {

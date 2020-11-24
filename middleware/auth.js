@@ -17,7 +17,10 @@ module.exports = function (req, res, next) {
   // Verify token
   try {
     // The previously encoded payload is decoded
-    const decoded = jwt.verify(token, config.get("jwtSecret"));
+    const decoded = jwt.verify(
+      token,
+      process.env.jwtSecret || config.get("jwtSecret")
+    );
     // Get the user attribute of the payload, put it in the request
     // The middleware is modifying the request.
     req.user = decoded.user;
