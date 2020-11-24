@@ -1,11 +1,5 @@
-let port = null;
-axios.get("../../config/port.json").then((resp) => {
-  port = resp.data.port;
-});
-
 function db(requestType, url, data, requiresAuth, headers) {
-  // 5070 will be default
-  url = `http://localhost:${port || 5070}` + url;
+  const url = "https://pok3game.herokuapp.com/";
   let request = null;
   if (requiresAuth) {
     headers["x-auth-token"] = localStorage.getItem("x-auth-token");
