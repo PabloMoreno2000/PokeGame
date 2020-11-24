@@ -1,5 +1,5 @@
 function db(requestType, url, data, requiresAuth, headers) {
-  const url = "https://pok3game.herokuapp.com/";
+  url = "https://pok3game.herokuapp.com" + url;
   let request = null;
   if (requiresAuth) {
     headers["x-auth-token"] = localStorage.getItem("x-auth-token");
