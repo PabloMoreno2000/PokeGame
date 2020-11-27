@@ -24,8 +24,12 @@ $(document).ready(async () => {
   });
 
   byId(joinGame).click(async () => {
-    // Get lobby
-    const lobbyId = byId(lobbyInput).val();
-    await joinLobby(lobbyId);
+    try {
+      // Get lobby
+      const lobbyId = byId(lobbyInput).val();
+      await joinLobby(lobbyId);
+    } catch (error) {
+      alert("Lobby id not found");
+    }
   });
 });

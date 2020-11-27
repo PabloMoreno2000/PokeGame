@@ -21,6 +21,7 @@ $(document).ready(async () => {
       localStorage.setItem("username", username);
       window.location.replace("../Home.html");
     } catch (error) {
+      alert("Credentials not found");
       console.log(error);
       return;
     }
